@@ -61,8 +61,6 @@
                     </div>
                 </div>
             </div>
-            
-            <!-- IMAGEM RESTAURADA COMO SOLICITADO -->
             <img src="https://i.ibb.co/QVrx9wS/Adobe-Express-file-2.png" alt="Equipa e Bônus" class="absolute -right-2 bottom-[-10px] sm:top-1/2 sm:-translate-y-1/2 sm:-right-4 h-40 w-40 sm:h-52 sm:w-52 object-contain drop-shadow-2xl z-0 pointer-events-none transform scale-110">
         </div>
 
@@ -85,9 +83,14 @@
             </div>
         </div>
 
+        <!-- BOTÃO DE VER ESTATÍSTICAS DETALHADAS -->
+        <button onclick="window.location.href='estatisticas-equipa.html'" class="w-full bg-white border border-gray-200 hover:bg-gray-50 text-gray-900 py-4 rounded-[1.5rem] font-black text-sm active:scale-95 transition-transform flex items-center justify-center gap-2 shadow-sm">
+            <span class="material-icons text-[#F7931A]">bar_chart</span> Ver Estatísticas e Ganhos Diários
+        </button>
+
         <!-- LISTA DE INDICADOS -->
-        <div>
-            <h3 class="text-lg font-black text-gray-900 mb-4">Sua Rede</h3>
+        <div class="mt-2">
+            <h3 class="text-lg font-black text-gray-900 mb-4">Sua Rede Ativa</h3>
             <div id="referralsContainer" class="flex flex-col gap-3">
                 <div class="flex justify-center py-6 text-gray-400">
                     <svg class="animate-spin h-8 w-8 text-bitcoin" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z"></path></svg>
@@ -186,11 +189,8 @@
                 
                 if (resDash.ok && dataDash.user) {
                     const myCode = dataDash.user.referralCode;
-                    
-                    // Constrói o link usando a URL do backend (se definida no ENV) ou o domínio em que o app está rodando.
                     const baseUrl = dataDash.frontendUrl || window.location.origin;
                     myLinkUrl = `${baseUrl}/index.html?ref=${myCode}`;
-                    
                     document.getElementById('referralCodeText').textContent = myLinkUrl;
                 } else if (resDash.status === 401) {
                     localStorage.removeItem('token'); window.location.href = 'index.html';

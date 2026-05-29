@@ -69,7 +69,7 @@
             
             <span class="text-[0.65rem] font-bold text-gray-400 uppercase tracking-widest pl-4 pt-3 pb-1">Segurança</span>
 
-            <button onclick="exibirToast('Função em desenvolvimento. Contate o suporte para alterar o PIN.', 'info')" class="w-full flex items-center justify-between p-3.5 hover:bg-gray-50 active:bg-gray-100 rounded-2xl transition-colors">
+            <button onclick="window.location.href='alterar-pin.html'" class="w-full flex items-center justify-between p-3.5 hover:bg-gray-50 active:bg-gray-100 rounded-2xl transition-colors">
                 <div class="flex items-center gap-4">
                     <div class="w-10 h-10 flex items-center justify-center shrink-0">
                         <img src="https://i.ibb.co/4wK8Z7qf/Adobe-Express-file-5.png" alt="PIN" class="h-9 w-9 object-contain drop-shadow-sm">
@@ -82,7 +82,7 @@
                 <span class="material-icons text-gray-300">chevron_right</span>
             </button>
 
-            <button onclick="exibirToast('Função em desenvolvimento. Contate o suporte.', 'info')" class="w-full flex items-center justify-between p-3.5 hover:bg-gray-50 active:bg-gray-100 rounded-2xl transition-colors">
+            <button onclick="window.location.href='alterar-senha.html'" class="w-full flex items-center justify-between p-3.5 hover:bg-gray-50 active:bg-gray-100 rounded-2xl transition-colors">
                 <div class="flex items-center gap-4">
                     <div class="w-10 h-10 flex items-center justify-center shrink-0">
                         <img src="https://i.ibb.co/Y7YfXDsM/1780046300149.png" alt="Senha" class="h-9 w-9 object-contain drop-shadow-sm">
@@ -127,7 +127,8 @@
                 <span class="material-icons text-gray-300">open_in_new</span>
             </button>
 
-            <button onclick="exibirToast('Carregando Políticas...', 'info')" class="w-full flex items-center justify-between p-3.5 hover:bg-gray-50 active:bg-gray-100 rounded-2xl transition-colors">
+            <!-- AQUI: Redirecionamento para a página de Termos e Condições -->
+            <button onclick="window.location.href='termos.html'" class="w-full flex items-center justify-between p-3.5 hover:bg-gray-50 active:bg-gray-100 rounded-2xl transition-colors">
                 <div class="flex items-center gap-4">
                     <div class="w-10 h-10 flex items-center justify-center shrink-0">
                         <img src="https://i.ibb.co/B2yCCM5j/terms-and-conditions-3d-icon-png-download-14620732.png" alt="Políticas" class="h-9 w-9 object-contain drop-shadow-sm">
@@ -174,7 +175,6 @@
                 <span class="text-[0.65rem] font-medium">Equipa</span>
             </a>
             
-            <!-- PERFIL ATIVO -->
             <a href="perfil.html" class="flex flex-col items-center justify-center text-bitcoin w-14 transition-transform active:scale-95">
                 <img src="https://i.ibb.co/RTrC0N4B/1780052456588.png" alt="Perfil" class="h-6 w-6 object-contain mb-1">
                 <span class="text-[0.65rem] font-bold">Perfil</span>
@@ -203,7 +203,6 @@
             <img src="https://i.ibb.co/1fFPT3J0/teams-3d-icon-png-download-8894250.png" class="h-5 w-5 object-contain"> Minha Equipa
         </a>
         
-        <!-- PERFIL ATIVO DESKTOP -->
         <a href="perfil.html" class="flex items-center gap-3 px-6 py-4 text-bitcoin bg-orange-50 font-bold border-r-4 border-bitcoin">
             <img src="https://i.ibb.co/RTrC0N4B/1780052456588.png" class="h-5 w-5 object-contain"> Meu Perfil
         </a>

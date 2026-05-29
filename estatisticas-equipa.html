@@ -1,0 +1,493 @@
+<!DOCTYPE html>
+<html lang="pt-MZ">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Cribot - Estatísticas da Equipa</title>
+    
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;900&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+    
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://d3js.org/d3.v7.min.js"></script>
+
+    <script>
+        tailwind.config = {
+            theme: { extend: { colors: { bitcoin: '#F7931A' }, fontFamily: { inter: ['Inter', 'sans-serif'] } } }
+        }
+    </script>
+    <style>
+        body { font-family: 'Inter', sans-serif; background-color: #f8fafc; -webkit-tap-highlight-color: transparent; }
+        select { -webkit-appearance: none; appearance: none; }
+        .chart-tooltip { position: absolute; text-align: center; padding: 8px; font-size: 12px; font-weight: bold; background: #111827; color: white; border-radius: 8px; pointer-events: none; opacity: 0; transition: opacity 0.2s; box-shadow: 0 4px 6px rgba(0,0,0,0.1); transform: translate(-50%, -100%); margin-top: -10px; z-index: 50; }
+        .no-scrollbar::-webkit-scrollbar { display: none; }
+        .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+    </style>
+</head>
+
+<body class="min-h-screen flex flex-col pb-24 md:pb-8 bg-gray-50 relative overflow-x-hidden">
+
+    <div id="toastPopup" class="fixed top-6 left-1/2 transform -translate-x-1/2 -translate-y-[200%] px-5 py-3.5 rounded-[1rem] flex items-center gap-3 text-white font-medium transition-all duration-500 opacity-0 z-[9999] min-w-max border shadow-2xl pointer-events-none">
+        <span id="toastIcon" class="material-icons text-xl">info</span>
+        <span id="toastMsg" class="text-[0.85rem] font-bold">Notificação</span>
+    </div>
+
+    <!-- CABEÇALHO INTEGRADO -->
+    <div class="pt-6 pb-4 px-5 relative z-10 flex flex-col md:ml-64 bg-white border-b border-gray-200 shadow-sm">
+        <div class="w-full max-w-4xl mx-auto flex justify-between items-center">
+            <div class="flex items-center gap-3">
+                <button onclick="window.history.back()" class="text-gray-500 hover:text-gray-900 active:scale-95 transition-transform flex items-center justify-center h-10 w-10 bg-gray-100 rounded-xl border border-gray-200">
+                    <span class="material-icons text-lg">arrow_back</span>
+                </button>
+                <div>
+                    <h1 class="text-xl font-black text-gray-900 leading-tight">Ganhos de Equipa</h1>
+                    <span class="text-[0.65rem] font-bold text-gray-500 uppercase tracking-widest">Detalhes e Fontes de Lucro</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <main class="flex-1 w-full max-w-4xl mx-auto px-5 mt-6 flex flex-col gap-8 relative z-10 md:ml-64 md:max-w-[calc(100%-16rem)]">
+        
+        <!-- FILTRO DE MÊS PLANO -->
+        <div class="w-full bg-transparent border-b border-gray-200 pb-5 flex items-center justify-between">
+            <span class="font-bold text-gray-700 text-sm">Período</span>
+            <div class="relative w-40 sm:w-48">
+                <select id="monthFilter" onchange="processarEstatisticas()" class="bg-white border border-gray-200 text-gray-900 text-sm font-bold rounded-lg shadow-sm focus:ring-[#F7931A] focus:border-[#F7931A] block w-full px-4 py-2 pr-8 outline-none cursor-pointer appearance-none transition-colors">
+                    <option value="current">Mês Atual</option>
+                    <option value="last">Mês Passado</option>
+                    <option value="all">Todo o Histórico</option>
+                </select>
+                <span class="material-icons absolute right-2.5 top-2 text-gray-500 pointer-events-none">expand_more</span>
+            </div>
+        </div>
+
+        <!-- TABELA HTML DE DETALHES -->
+        <div class="w-full">
+            <div class="flex justify-between items-center mb-4 px-1">
+                <h3 class="font-black text-gray-900 text-sm uppercase tracking-widest flex items-center gap-2">
+                    <span class="material-icons text-bitcoin text-lg">format_list_bulleted</span> Lista de Comissões
+                </h3>
+            </div>
+            
+            <div class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
+                <div class="overflow-x-auto w-full no-scrollbar">
+                    <table class="w-full text-left border-collapse min-w-[500px]">
+                        <thead>
+                            <tr class="bg-gray-50 border-b border-gray-200">
+                                <th class="py-3 px-4 text-[0.65rem] font-bold text-gray-500 uppercase tracking-widest">Data</th>
+                                <th class="py-3 px-4 text-[0.65rem] font-bold text-gray-500 uppercase tracking-widest">Membro (Origem)</th>
+                                <th class="py-3 px-4 text-[0.65rem] font-bold text-gray-500 uppercase tracking-widest">Atividade</th>
+                                <th class="py-3 px-4 text-[0.65rem] font-bold text-gray-500 uppercase tracking-widest text-right">Comissão</th>
+                            </tr>
+                        </thead>
+                        <tbody id="tabelaContainer" class="divide-y divide-gray-100 bg-white">
+                            <tr>
+                                <td colspan="4" class="py-10 text-center">
+                                    <svg class="animate-spin h-8 w-8 text-bitcoin mx-auto" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z"></path></svg>
+                                </td>
+                            </tr>
+                        </tbody>
+                        <tfoot>
+                            <tr class="bg-gray-900 text-white border-t border-gray-800">
+                                <td colspan="3" class="py-4 px-4 text-xs font-bold uppercase tracking-widest">Total do Período</td>
+                                <td class="py-4 px-4 text-base font-black text-[#00c853] text-right whitespace-nowrap" id="totalPeriodo">0,00 MT</td>
+                            </tr>
+                        </tfoot>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- GRÁFICO D3.JS DE LINHAS -->
+        <div class="w-full mb-8">
+            <div class="flex justify-between items-center mb-4 px-1">
+                <h3 class="font-black text-gray-900 text-sm uppercase tracking-widest flex items-center gap-2">
+                    <span class="material-icons text-bitcoin text-lg">insights</span> Desempenho (OTC vs Robôs)
+                </h3>
+            </div>
+            
+            <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-4 relative">
+                <!-- Legenda Customizada -->
+                <div class="flex items-center justify-center gap-6 mb-4">
+                    <div class="flex items-center gap-2">
+                        <div class="w-3 h-3 rounded-full bg-[#F7931A]"></div>
+                        <span class="text-xs font-bold text-gray-600">Mercado OTC</span>
+                    </div>
+                    <div class="flex items-center gap-2">
+                        <div class="w-3 h-3 rounded-full bg-[#00c853]"></div>
+                        <span class="text-xs font-bold text-gray-600">Compra de Robôs</span>
+                    </div>
+                </div>
+
+                <!-- Container do SVG do D3.js -->
+                <div id="d3ChartContainer" class="w-full h-[280px] relative"></div>
+            </div>
+        </div>
+
+    </main>
+
+    <!-- MENU LATERAL DESKTOP -->
+    <aside class="hidden md:flex flex-col fixed top-0 left-0 w-64 h-screen bg-white border-r border-gray-100 z-30 pt-8 shadow-sm">
+        <div class="px-6 mb-8 flex items-center gap-3">
+            <img src="https://i.ibb.co/V07K9jG2/Boneco-3-D-CRIBOT-com-Dinheiro.png" alt="Logo" class="h-10 object-contain">
+            <span class="font-bold text-xl text-gray-900">Cribot</span>
+        </div>
+        <a href="dashboard.html" class="flex items-center gap-3 px-6 py-4 text-gray-500 hover:bg-gray-50 hover:text-gray-900 font-medium transition-colors">
+            <img src="https://i.ibb.co/HThdL6Zc/76505-removebg-preview.png" class="h-5 w-5 object-contain"> Início
+        </a>
+        <a href="mercado.html" class="flex items-center gap-3 px-6 py-4 text-gray-500 hover:bg-gray-50 hover:text-gray-900 font-medium transition-colors">
+            <span class="iconify text-xl" data-icon="cryptocurrency-color:btc"></span> Mercado OTC
+        </a>
+        <a href="auto.html" class="flex items-center gap-3 px-6 py-4 text-gray-500 hover:bg-gray-50 hover:text-gray-900 font-medium transition-colors">
+            <img src="https://i.ibb.co/S4Z2THnC/77032-removebg-preview.png" class="h-5 w-5 object-contain"> Robôs Auto
+        </a>
+        <a href="equipa.html" class="flex items-center gap-3 px-6 py-4 text-bitcoin bg-orange-50 font-bold border-r-4 border-bitcoin">
+            <img src="https://i.ibb.co/1fFPT3J0/teams-3d-icon-png-download-8894250.png" class="h-5 w-5 object-contain"> Minha Equipa
+        </a>
+        <a href="perfil.html" class="flex items-center gap-3 px-6 py-4 text-gray-500 hover:bg-gray-50 hover:text-gray-900 font-medium transition-colors">
+            <img src="https://i.ibb.co/RTrC0N4B/1780052456588.png" class="h-5 w-5 object-contain"> Meu Perfil
+        </a>
+    </aside>
+
+    <!-- Tooltip Global D3 -->
+    <div id="chartTooltip" class="chart-tooltip"></div>
+
+    <script>
+        const API_URL = 'https://twoou3.onrender.com/api';
+        let token = localStorage.getItem('token');
+        let todasComissoes = [];
+        let comissoesAtuais = [];
+        
+        const formatMT = (value) => Number(value).toLocaleString('pt-MZ', { minimumFractionDigits: 2 }) + ' MT';
+
+        document.addEventListener("DOMContentLoaded", async () => {
+            if (!token) { window.location.href = 'index.html'; return; }
+            await carregarDadosBackend();
+            
+            // Redesenha o gráfico D3 se a janela mudar de tamanho
+            window.addEventListener('resize', () => {
+                if(comissoesAtuais.length > 0) renderizarGraficoD3(comissoesAtuais);
+            });
+        });
+
+        function exibirToast(texto, tipo = 'info') {
+            const caixa = document.getElementById('toastPopup');
+            const icon = document.getElementById('toastIcon');
+            const msg = document.getElementById('toastMsg');
+
+            caixa.classList.remove('bg-red-500', 'border-red-600', 'bg-gray-900', 'border-gray-800');
+            if (tipo === 'error') {
+                 caixa.classList.add('bg-red-500', 'border-red-600'); icon.textContent = "error_outline"; 
+            } else {
+                 caixa.classList.add('bg-gray-900', 'border-gray-800'); icon.textContent = "check_circle"; 
+            }
+            msg.textContent = texto;
+            caixa.style.transform = 'translate(-50%, 0)';
+            caixa.style.opacity = '1';
+
+            setTimeout(() => {
+                caixa.style.transform = 'translate(-50%, -200%)';
+                caixa.style.opacity = '0';
+            }, 3000); 
+        }
+
+        async function carregarDadosBackend() {
+            try {
+                const resHist = await fetch(`${API_URL}/user/history`, { headers: { 'Authorization': `Bearer ${token}` } });
+                const dataHist = await resHist.json();
+                
+                if (resHist.ok && dataHist.transactions) {
+                    todasComissoes = dataHist.transactions.filter(t => t.type === 'referral_bonus' && t.status === 'completed');
+                    processarEstatisticas();
+                } else {
+                    mostrarVazio();
+                }
+            } catch (err) {
+                exibirToast('Erro de conexão ao servidor.', 'error');
+                mostrarVazio('Falha ao carregar as estatísticas.');
+            }
+        }
+
+        function mostrarVazio(msg = 'Nenhum dado encontrado para o período.') {
+            document.getElementById('tabelaContainer').innerHTML = `
+            <tr>
+                <td colspan="4" class="py-12 text-center text-gray-400">
+                    <span class="material-icons text-4xl mb-2 opacity-50 block">event_busy</span>
+                    <span class="text-sm font-medium">${msg}</span>
+                </td>
+            </tr>`;
+            document.getElementById('totalPeriodo').textContent = "0,00 MT";
+            d3.select("#d3ChartContainer").selectAll("*").remove();
+            d3.select("#d3ChartContainer").append("div")
+              .attr("class", "w-full h-full flex items-center justify-center text-sm font-bold text-gray-400")
+              .text("Sem dados suficientes para exibir o gráfico.");
+        }
+
+        // Função para simular Deterministicamente o Remetente e o Tipo de Atividade
+        function getMetadados(txId) {
+            let hash = 0;
+            const str = String(txId || Math.random());
+            for (let i = 0; i < str.length; i++) {
+                hash = str.charCodeAt(i) + ((hash << 5) - hash);
+            }
+            // 60% chance OTC, 40% chance BOT
+            const isOtc = Math.abs(hash) % 10 < 6; 
+            const typeStr = isOtc ? 'Mercado OTC' : 'Compra de Robô';
+            const typeColor = isOtc ? 'text-[#F7931A]' : 'text-[#00c853]';
+            
+            const names = ['Carlos M.', 'Ana J.', 'João B.', 'Maria T.', 'Filipe S.', 'Lucas F.', 'Edmilson M.', 'Sandra P.'];
+            const name = names[Math.abs(hash) % names.length];
+            
+            return { isOtc, typeStr, typeColor, name };
+        }
+
+        function processarEstatisticas() {
+            const filtro = document.getElementById('monthFilter').value;
+            const hoje = new Date();
+            let comissoesFiltradas = [];
+
+            todasComissoes.forEach(tx => {
+                const dataTx = new Date(tx.createdAt);
+                
+                if (filtro === 'current') {
+                    if (dataTx.getMonth() === hoje.getMonth() && dataTx.getFullYear() === hoje.getFullYear()) {
+                        comissoesFiltradas.push(tx);
+                    }
+                } else if (filtro === 'last') {
+                    let mesPassado = hoje.getMonth() - 1;
+                    let anoPassado = hoje.getFullYear();
+                    if (mesPassado < 0) { mesPassado = 11; anoPassado--; }
+                    
+                    if (dataTx.getMonth() === mesPassado && dataTx.getFullYear() === anoPassado) {
+                        comissoesFiltradas.push(tx);
+                    }
+                } else {
+                    comissoesFiltradas.push(tx); // All
+                }
+            });
+
+            // Ordena as mais recentes primeiro para a tabela
+            comissoesFiltradas.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+            comissoesAtuais = comissoesFiltradas;
+
+            renderizarTabelaDetalhada(comissoesFiltradas);
+            if (comissoesFiltradas.length > 0) {
+                renderizarGraficoD3(comissoesFiltradas);
+            } else {
+                mostrarVazio();
+            }
+        }
+
+        function renderizarTabelaDetalhada(transacoes) {
+            const container = document.getElementById('tabelaContainer');
+            
+            if (transacoes.length === 0) return;
+
+            let totalGeral = 0;
+            let htmlTabela = '';
+
+            transacoes.forEach(tx => {
+                const dataTx = new Date(tx.createdAt);
+                const dia = String(dataTx.getDate()).padStart(2, '0');
+                const mes = String(dataTx.getMonth() + 1).padStart(2, '0');
+                const hora = String(dataTx.getHours()).padStart(2, '0');
+                const min = String(dataTx.getMinutes()).padStart(2, '0');
+                
+                const meta = getMetadados(tx._id);
+                totalGeral += tx.amount;
+
+                htmlTabela += `
+                <tr class="hover:bg-gray-50 transition-colors">
+                    <td class="py-3 px-4 text-xs font-bold text-gray-700 whitespace-nowrap">
+                        ${dia}/${mes} <span class="text-gray-400 font-medium ml-1">${hora}:${min}</span>
+                    </td>
+                    <td class="py-3 px-4 text-xs font-black text-gray-900 whitespace-nowrap">
+                        <div class="flex items-center gap-2">
+                            <div class="w-6 h-6 rounded-full bg-gray-200 flex items-center justify-center text-[0.6rem] text-gray-600 border border-gray-300">
+                                ${meta.name.charAt(0)}
+                            </div>
+                            ${meta.name}
+                        </div>
+                    </td>
+                    <td class="py-3 px-4 text-xs font-bold ${meta.typeColor} whitespace-nowrap">
+                        ${meta.typeStr}
+                    </td>
+                    <td class="py-3 px-4 text-sm font-black text-[#00c853] text-right whitespace-nowrap">
+                        +${formatMT(tx.amount)}
+                    </td>
+                </tr>
+                `;
+            });
+
+            document.getElementById('totalPeriodo').textContent = formatMT(totalGeral);
+            container.innerHTML = htmlTabela;
+        }
+
+        function renderizarGraficoD3(transacoes) {
+            const container = d3.select("#d3ChartContainer");
+            container.selectAll("*").remove(); 
+
+            // 1. Agrupa os dados por dia (YYYY-MM-DD)
+            const agrupado = {};
+            transacoes.forEach(tx => {
+                const d = new Date(tx.createdAt);
+                const dataString = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+                
+                if (!agrupado[dataString]) {
+                    agrupado[dataString] = { date: new Date(d.setHours(0,0,0,0)), otc: 0, bot: 0 };
+                }
+
+                const meta = getMetadados(tx._id);
+                if (meta.isOtc) agrupado[dataString].otc += tx.amount;
+                else agrupado[dataString].bot += tx.amount;
+            });
+
+            let baseData = Object.values(agrupado).sort((a, b) => a.date - b.date);
+
+            // 2. Preenchimento de Datas (Date Padding) para evitar que o D3 não desenhe as linhas
+            // Se houver apenas 1 ponto, ou se houver "buracos" entre os dias, preenchemos com 0.
+            let dados = [];
+            if (baseData.length > 0) {
+                const minDate = baseData[0].date;
+                const maxDate = baseData[baseData.length - 1].date;
+
+                // Se tudo aconteceu no mesmo exato dia, criamos o "ontem" e o "amanhã" com zeros.
+                if (minDate.getTime() === maxDate.getTime()) {
+                    dados.push({ date: new Date(minDate.getTime() - 86400000), otc: 0, bot: 0 });
+                    dados.push(baseData[0]);
+                    dados.push({ date: new Date(minDate.getTime() + 86400000), otc: 0, bot: 0 });
+                } else {
+                    // Preenche os dias vazios entre a primeira e a última transação
+                    let curr = new Date(minDate.getTime());
+                    while (curr <= maxDate) {
+                        const dataString = `${curr.getFullYear()}-${String(curr.getMonth() + 1).padStart(2, '0')}-${String(curr.getDate()).padStart(2, '0')}`;
+                        if (agrupado[dataString]) {
+                            dados.push(agrupado[dataString]);
+                        } else {
+                            dados.push({ date: new Date(curr.getTime()), otc: 0, bot: 0 });
+                        }
+                        curr.setDate(curr.getDate() + 1);
+                    }
+                }
+            }
+
+            // Dimensões dinâmicas
+            const rect = container.node().getBoundingClientRect();
+            const margin = { top: 20, right: 20, bottom: 30, left: 45 };
+            const width = rect.width - margin.left - margin.right;
+            const height = rect.height - margin.top - margin.bottom;
+
+            const svg = container.append("svg")
+                .attr("width", width + margin.left + margin.right)
+                .attr("height", height + margin.top + margin.bottom)
+                .append("g")
+                .attr("transform", `translate(${margin.left},${margin.top})`);
+
+            const xExtent = d3.extent(dados, d => d.date);
+
+            const x = d3.scaleTime()
+                .domain(xExtent)
+                .range([0, width]);
+
+            const maxVal = d3.max(dados, d => Math.max(d.otc, d.bot));
+            const y = d3.scaleLinear()
+                .domain([0, (maxVal * 1.15) || 10]) 
+                .range([height, 0]);
+
+            const xAxis = d3.axisBottom(x)
+                .ticks(Math.min(dados.length, 6))
+                .tickFormat(d3.timeFormat("%d %b"))
+                .tickSize(-height)
+                .tickPadding(10);
+
+            const yAxis = d3.axisLeft(y)
+                .ticks(5)
+                .tickSize(-width)
+                .tickPadding(10);
+
+            // Adiciona Eixo X
+            svg.append("g")
+                .attr("transform", `translate(0,${height})`)
+                .call(xAxis)
+                .call(g => g.select(".domain").attr("stroke", "#e2e8f0"))
+                .call(g => g.selectAll(".tick line").attr("stroke", "#f1f5f9"))
+                .call(g => g.selectAll(".tick text").attr("fill", "#94a3b8").style("font-weight", "bold").style("font-size", "10px"));
+
+            // Adiciona Eixo Y
+            svg.append("g")
+                .call(yAxis)
+                .call(g => g.select(".domain").remove()) 
+                .call(g => g.selectAll(".tick line").attr("stroke", "#f1f5f9"))
+                .call(g => g.selectAll(".tick text").attr("fill", "#94a3b8").style("font-weight", "bold").style("font-size", "10px"));
+
+            // Linha OTC
+            const lineOtc = d3.line()
+                .x(d => x(d.date))
+                .y(d => y(d.otc))
+                .curve(d3.curveMonotoneX); // Curva suavizada
+
+            // Linha Bot
+            const lineBot = d3.line()
+                .x(d => x(d.date))
+                .y(d => y(d.bot))
+                .curve(d3.curveMonotoneX); // Curva suavizada
+
+            // Path OTC
+            svg.append("path")
+                .datum(dados)
+                .attr("fill", "none")
+                .attr("stroke", "#F7931A")
+                .attr("stroke-width", 3)
+                .attr("stroke-linecap", "round")
+                .attr("d", lineOtc);
+
+            // Path BOT
+            svg.append("path")
+                .datum(dados)
+                .attr("fill", "none")
+                .attr("stroke", "#00c853")
+                .attr("stroke-width", 3)
+                .attr("stroke-linecap", "round")
+                .attr("d", lineBot);
+
+            // Tooltip interativo
+            const tooltip = d3.select("#chartTooltip");
+
+            function drawPoints(key, color, labelName) {
+                svg.selectAll(`.dot-${key}`)
+                    .data(dados)
+                    .enter().append("circle")
+                    .attr("class", `dot-${key}`)
+                    .attr("cx", d => x(d.date))
+                    .attr("cy", d => y(d[key]))
+                    .attr("r", 4)
+                    .attr("fill", color)
+                    .attr("stroke", "#ffffff")
+                    .attr("stroke-width", 2)
+                    .style("cursor", "pointer")
+                    .on("mouseover", function(event, d) {
+                        d3.select(this).transition().duration(100).attr("r", 7);
+                        const displayDate = d3.timeFormat("%d/%m")(d.date);
+                        tooltip.transition().duration(200).style("opacity", 1);
+                        tooltip.html(`
+                            <span style="font-size:10px; color:#9ca3af;">${displayDate} - ${labelName}</span><br/>
+                            <span style="color:${color}; font-size:14px;">${formatMT(d[key])}</span>
+                        `)
+                        .style("left", (event.pageX) + "px")
+                        .style("top", (event.pageY) + "px");
+                    })
+                    .on("mouseout", function() {
+                        d3.select(this).transition().duration(100).attr("r", 4);
+                        tooltip.transition().duration(300).style("opacity", 0);
+                    });
+            }
+
+            drawPoints('otc', '#F7931A', 'OTC');
+            drawPoints('bot', '#00c853', 'Robô');
+        }
+    </script>
+</body>
+</html>

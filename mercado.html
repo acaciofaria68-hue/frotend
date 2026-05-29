@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Cribot - Mercado OTC</title>
+    <title>Cribot - Mercado BTC/USDT</title>
     
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -15,9 +15,8 @@
     <script src="https://code.iconify.design/3/3.1.0/iconify.min.js"></script>
     <script src="https://cdn.tailwindcss.com"></script>
     
-    <!-- Gráfico TradingView e WebSockets -->
+    <!-- Gráfico TradingView -->
     <script src="https://unpkg.com/lightweight-charts@3.8.0/dist/lightweight-charts.standalone.production.js"></script>
-    <script src="https://cdn.socket.io/4.7.4/socket.io.min.js"></script>
 
     <!-- Flatpickr (Calendário Customizado) -->
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
@@ -44,7 +43,7 @@
 
 <body class="h-screen flex flex-col bg-white relative">
 
-    <!-- ÁUDIOS PROFISSIONAIS (FICHEIROS LOCAIS NA PASTA ASSETS) -->
+    <!-- ÁUDIOS PROFISSIONAIS -->
     <audio id="soundClick" src="assets/click.wav" preload="auto"></audio>
     <audio id="soundWin" src="assets/ganho.mp3" preload="auto"></audio>
     <audio id="soundLoss" src="assets/perda.mp3" preload="auto"></audio>
@@ -61,8 +60,8 @@
         <div class="flex items-center gap-2.5">
             <span class="iconify text-bitcoin text-[2.2rem]" data-icon="cryptocurrency-color:btc"></span>
             <div class="flex flex-col justify-center">
-                <span class="text-sm font-black text-gray-900 leading-none tracking-tight">CRIBOT OTC</span>
-                <span class="text-[0.60rem] font-bold text-gray-400 uppercase mt-1">Ao Vivo <span class="text-[#00c853] animate-pulse text-xs">●</span></span>
+                <span class="text-sm font-black text-gray-900 leading-none tracking-tight">BTC/USDT</span>
+                <span class="text-[0.60rem] font-bold text-gray-400 uppercase mt-1">Mercado Real <span class="text-[#00c853] animate-pulse text-xs">●</span></span>
             </div>
         </div>
         <div class="flex flex-col items-end justify-center">
@@ -101,7 +100,7 @@
         <div class="flex justify-between items-center mb-3 px-1">
             <div class="flex items-center gap-2">
                 <span class="iconify text-bitcoin text-lg" data-icon="cryptocurrency-color:btc"></span>
-                <span class="font-bold text-gray-900 text-sm">Bitcoin OTC</span>
+                <span class="font-bold text-gray-900 text-sm">Bitcoin (BTC/USDT)</span>
                 <span class="text-[#F7931A] font-black text-sm">92%</span>
             </div>
         </div>
@@ -256,7 +255,7 @@
             <img src="https://i.ibb.co/HThdL6Zc/76505-removebg-preview.png" class="h-5 w-5 object-contain"> Início
         </a>
         <a href="mercado.html" class="flex items-center gap-3 px-6 py-4 text-bitcoin bg-orange-50 font-bold border-r-4 border-bitcoin">
-            <span class="iconify text-xl" data-icon="cryptocurrency-color:btc"></span> Mercado OTC
+            <span class="iconify text-xl" data-icon="cryptocurrency-color:btc"></span> Mercado BTC/USDT
         </a>
         <a href="auto.html" class="flex items-center gap-3 px-6 py-4 text-gray-500 hover:bg-gray-50 hover:text-gray-900 font-medium transition-colors">
             <img src="https://i.ibb.co/S4Z2THnC/77032-removebg-preview.png" class="h-5 w-5 object-contain"> Robôs Auto
@@ -284,7 +283,7 @@
         let currentIntervalSeconds = 60;
         
         let actualPrice = 0; 
-        let socket = null;
+        let binanceWs = null;
         let animationFrameId = null;
 
         let targetPrice = 0;
@@ -418,11 +417,24 @@
             switch(intervalo) { case '1m': return 60; case '5m': return 300; case '15m': return 900; case '1h': return 3600; default: return 60; }
         }
 
-        function renderizarGrafico(intervalo = '1m') {
+        async function fetchBinanceHistory(interval) {
+            const res = await fetch(`https://api.binance.com/api/v3/klines?symbol=BTCUSDT&interval=${interval}&limit=1000`);
+            const data = await res.json();
+            return data.map(d => ({
+                time: Math.floor(d[0] / 1000),
+                open: parseFloat(d[1]),
+                high: parseFloat(d[2]),
+                low: parseFloat(d[3]),
+                close: parseFloat(d[4])
+            }));
+        }
+
+        async function renderizarGrafico(intervalo = '1m') {
             const container = document.getElementById('tv_chart');
             container.innerHTML = ''; 
             
             if(animationFrameId) { cancelAnimationFrame(animationFrameId); animationFrameId = null; }
+            if(binanceWs) { binanceWs.close(); binanceWs = null; }
 
             currentIntervalSeconds = getIntervalSeconds(intervalo);
 
@@ -443,72 +455,86 @@
 
             window.addEventListener('resize', () => { chart.resize(container.clientWidth, container.clientHeight); });
 
-            fetch(`${API_URL}/otc/history?interval=${intervalo}`)
-                .then(res => res.json())
-                .then(data => {
-                    candleSeries.setData(data);
-                    
-                    const agora = Date.now();
-                    contratosAtivos = contratosAtivos.filter(ct => {
-                        const passados = Math.floor((agora - ct.startTime) / 1000);
-                        ct.tempoFaltante = ct.initialDuration - passados;
-                        return ct.tempoFaltante > 0;
-                    });
-                    
-                    salvarTradesLocal();
-
-                    if(contratosAtivos.length > 0) {
-                        document.getElementById('activeDot').classList.remove('hidden');
-                    }
-
-                    contratosAtivos.forEach(ct => {
-                        ct.priceLine = candleSeries.createPriceLine({
-                            price: ct.entryPrice, color: ct.direction === 'call' ? '#00c853' : '#ff1744', lineWidth: 2, lineStyle: 0, axisLabelVisible: true, title: ct.direction === 'call' ? 'COMPRA' : 'VENDA'
-                        });
-                        iniciarIntervaloRecuperado(ct);
-                    });
-
-                    currentBar = data[data.length - 1];
-                    actualPrice = currentBar.close;
-
-                    iniciarEscutaServidorOTC();
+            try {
+                const data = await fetchBinanceHistory(intervalo);
+                candleSeries.setData(data);
+                
+                const agora = Date.now();
+                contratosAtivos = contratosAtivos.filter(ct => {
+                    const passados = Math.floor((agora - ct.startTime) / 1000);
+                    ct.tempoFaltante = ct.initialDuration - passados;
+                    return ct.tempoFaltante > 0;
                 });
+                
+                salvarTradesLocal();
+
+                if(contratosAtivos.length > 0) {
+                    document.getElementById('activeDot').classList.remove('hidden');
+                }
+
+                contratosAtivos.forEach(ct => {
+                    ct.priceLine = candleSeries.createPriceLine({
+                        price: ct.entryPrice, color: ct.direction === 'call' ? '#00c853' : '#ff1744', lineWidth: 2, lineStyle: 0, axisLabelVisible: true, title: ct.direction === 'call' ? 'COMPRA' : 'VENDA'
+                    });
+                    iniciarIntervaloRecuperado(ct);
+                });
+
+                currentBar = data[data.length - 1];
+                actualPrice = currentBar.close;
+                targetPrice = actualPrice;
+                animatedPrice = actualPrice;
+                serverCandleTime = currentBar.time;
+
+                iniciarEscutaBinance(intervalo);
+                animate();
+
+            } catch(e) {
+                console.error("Erro ao carregar grafico Binance:", e);
+                exibirToast('Erro ao carregar dados do mercado.', 'error');
+            }
         }
 
-        function iniciarEscutaServidorOTC() {
-            if (!socket) {
-                socket = io(API_URL.replace('/api', ''));
-                socket.on('otc_tick', (data) => {
-                    targetPrice = data.price;
-                    serverCandleTime = data.candleTime; 
-                    if (animatedPrice === 0) animatedPrice = targetPrice;
-                });
-            }
+        function iniciarEscutaBinance(interval) {
+            binanceWs = new WebSocket(`wss://stream.binance.com:9443/ws/btcusdt@kline_${interval}`);
+            
+            binanceWs.onmessage = (event) => {
+                const message = JSON.parse(event.data);
+                const kline = message.k;
+                
+                targetPrice = parseFloat(kline.c);
+                serverCandleTime = Math.floor(kline.t / 1000);
+                
+                if (animatedPrice === 0) animatedPrice = targetPrice;
+            };
+        }
 
-            function animate() {
-                if (targetPrice !== 0 && animatedPrice !== 0 && currentBar && serverCandleTime) {
-                    const diff = targetPrice - animatedPrice;
-                    animatedPrice += diff * 0.15; 
+        function animate() {
+            if (targetPrice !== 0 && animatedPrice !== 0 && currentBar && serverCandleTime) {
+                const diff = targetPrice - animatedPrice;
+                animatedPrice += diff * 0.15; 
 
-                    const displayPrice = Math.round(animatedPrice * 100) / 100;
-                    actualPrice = displayPrice;
+                const displayPrice = Math.round(animatedPrice * 100) / 100;
+                actualPrice = displayPrice;
 
-                    const candleTime = Math.floor(serverCandleTime / currentIntervalSeconds) * currentIntervalSeconds;
-
-                    if (currentBar.time === candleTime) {
-                        currentBar.close = displayPrice;
-                        currentBar.high = Math.max(currentBar.high, targetPrice);
-                        currentBar.low = Math.min(currentBar.low, targetPrice);
-                    } else if (candleTime > currentBar.time) {
-                        currentBar = { time: candleTime, open: displayPrice, high: Math.max(displayPrice, targetPrice), low: Math.min(displayPrice, targetPrice), close: displayPrice };
-                    }
-                    
-                    candleSeries.update(currentBar);
-                    atualizarPlEmTempoReal();
+                // Mantem sincronia do tempo com base no timestamp da vela do servidor Binance
+                if (currentBar.time === serverCandleTime) {
+                    currentBar.close = displayPrice;
+                    currentBar.high = Math.max(currentBar.high, targetPrice, displayPrice);
+                    currentBar.low = Math.min(currentBar.low, targetPrice, displayPrice);
+                } else if (serverCandleTime > currentBar.time) {
+                    currentBar = { 
+                        time: serverCandleTime, 
+                        open: displayPrice, 
+                        high: displayPrice, 
+                        low: displayPrice, 
+                        close: displayPrice 
+                    };
                 }
-                animationFrameId = requestAnimationFrame(animate);
+                
+                candleSeries.update(currentBar);
+                atualizarPlEmTempoReal();
             }
-            animate();
+            animationFrameId = requestAnimationFrame(animate);
         }
 
         function atualizarPlEmTempoReal() {
@@ -626,7 +652,7 @@
             });
 
             const contratoObj = { 
-                id: tempId, amount, direction, pair: 'BTC OTC', 
+                id: tempId, amount, direction, pair: 'BTC/USDT', 
                 initialDuration: durationSecs, tempoFaltante: durationSecs, 
                 entryPrice: entryPrice, startTime: Date.now(), priceLine: priceLine,
                 countdownPlayed: false 

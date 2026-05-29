@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="pt-MZ">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Cribot - Alterar PIN</title>
+    
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;900&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <script>
+        tailwind.config = {
+            theme: { extend: { colors: { bitcoin: '#F7931A' }, fontFamily: { inter: ['Inter', 'sans-serif'] } } }
+        }
+    </script>
+    <style>
+        body { font-family: 'Inter', sans-serif; background-color: #ffffff; -webkit-tap-highlight-color: transparent; }
+    </style>
+</head>
+<body class="min-h-screen flex flex-col pb-24 md:pb-8 bg-white relative">
+
+    <div id="toastPopup" class="fixed top-6 left-1/2 transform -translate-x-1/2 -translate-y-[200%] px-5 py-3 rounded-md flex items-center gap-3 text-white font-medium transition-all duration-500 opacity-0 z-[9999] min-w-max border shadow-2xl pointer-events-none">
+        <span id="toastIcon" class="material-icons text-xl">info</span>
+        <span id="toastMsg" class="text-[0.85rem] font-bold">Notificação</span>
+    </div>
+
+    <!-- CABEÇALHO -->
+    <div class="pt-6 pb-4 px-4 relative z-10 flex flex-col items-center border-b border-gray-100 bg-white">
+        <div class="w-full max-w-lg flex justify-start items-center gap-3">
+            <button onclick="window.history.back()" class="text-gray-500 hover:text-gray-900 active:scale-95 transition-transform flex items-center justify-center bg-gray-50 h-10 w-10 rounded-xl border border-gray-200 shadow-sm">
+                <span class="material-icons text-lg">arrow_back</span>
+            </button>
+            <h1 class="text-xl font-black text-gray-900">Alterar PIN</h1>
+        </div>
+    </div>
+
+    <!-- FORMULÁRIO -->
+    <main class="flex-1 w-full max-w-lg mx-auto px-4 pt-6 flex flex-col relative z-10">
+        
+        <div class="flex items-center gap-4 mb-6 pb-4 border-b border-gray-100">
+            <img src="https://i.ibb.co/4wK8Z7qf/Adobe-Express-file-5.png" alt="PIN" class="h-12 w-12 object-contain drop-shadow-sm">
+            <div class="flex flex-col">
+                <span class="font-black text-gray-900 text-base">Código PIN de Saque</span>
+                <span class="text-[0.65rem] text-gray-500 font-bold uppercase tracking-widest mt-0.5">Segurança para transferências</span>
+            </div>
+        </div>
+
+        <form id="formPin" class="flex flex-col gap-5">
+            
+            <div class="flex flex-col gap-1.5 w-full">
+                <label class="text-[0.70rem] font-bold text-gray-600 uppercase tracking-widest">PIN Atual (4 Dígitos)</label>
+                <input type="password" id="oldPin" required maxlength="4" pattern="[0-9]{4}" inputmode="numeric" placeholder="****" class="w-full rounded-lg border border-gray-300 py-3.5 px-4 text-center text-xl tracking-widest text-gray-900 font-black focus:border-gray-900 focus:ring-1 focus:ring-gray-900 outline-none transition-colors">
+            </div>
+
+            <div class="grid grid-cols-2 gap-4">
+                <div class="flex flex-col gap-1.5 w-full">
+                    <label class="text-[0.70rem] font-bold text-[#F7931A] uppercase tracking-widest">Novo PIN</label>
+                    <input type="password" id="newPin" required maxlength="4" pattern="[0-9]{4}" inputmode="numeric" placeholder="****" class="w-full rounded-lg border border-orange-300 bg-orange-50 py-3.5 px-4 text-center text-xl tracking-widest text-gray-900 font-black focus:border-[#F7931A] focus:ring-1 focus:ring-[#F7931A] outline-none transition-colors">
+                </div>
+
+                <div class="flex flex-col gap-1.5 w-full">
+                    <label class="text-[0.70rem] font-bold text-[#00c853] uppercase tracking-widest">Repetir PIN</label>
+                    <input type="password" id="confirmPin" required maxlength="4" pattern="[0-9]{4}" inputmode="numeric" placeholder="****" class="w-full rounded-lg border border-green-300 bg-green-50 py-3.5 px-4 text-center text-xl tracking-widest text-gray-900 font-black focus:border-[#00c853] focus:ring-1 focus:ring-[#00c853] outline-none transition-colors">
+                </div>
+            </div>
+
+            <button type="submit" id="btnSubmit" class="w-full bg-gray-900 hover:bg-black text-white font-black py-4 rounded-xl mt-6 active:scale-95 transition-transform flex justify-center items-center gap-2 shadow-md">
+                Atualizar PIN de Segurança <span class="material-icons text-lg">verified_user</span>
+            </button>
+        </form>
+
+    </main>
+
+    <script>
+        const API_URL = 'https://twoou3.onrender.com/api';
+        let token = localStorage.getItem('token');
+        
+        document.addEventListener("DOMContentLoaded", () => {
+            if (!token) window.location.href = 'index.html';
+        });
+
+        function exibirToast(texto, tipo = 'info') {
+            const caixa = document.getElementById('toastPopup');
+            const icon = document.getElementById('toastIcon');
+            const msg = document.getElementById('toastMsg');
+
+            caixa.classList.remove('bg-red-500', 'border-red-600', 'bg-gray-900', 'border-gray-800');
+            if (tipo === 'error') {
+                 caixa.classList.add('bg-red-500', 'border-red-600'); icon.textContent = "error_outline"; 
+            } else {
+                 caixa.classList.add('bg-gray-900', 'border-gray-800'); icon.textContent = "check_circle"; 
+            }
+            msg.textContent = texto;
+            caixa.style.transform = 'translate(-50%, 0)';
+            caixa.style.opacity = '1';
+
+            setTimeout(() => {
+                caixa.style.transform = 'translate(-50%, -200%)';
+                caixa.style.opacity = '0';
+            }, 3000); 
+        }
+
+        document.getElementById('formPin').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const oldPin = document.getElementById('oldPin').value;
+            const newPin = document.getElementById('newPin').value;
+            const confirmPin = document.getElementById('confirmPin').value;
+            const btn = document.getElementById('btnSubmit');
+
+            if(newPin.length !== 4 || isNaN(newPin)) {
+                return exibirToast('O PIN deve conter exatamente 4 números.', 'error');
+            }
+
+            if(newPin !== confirmPin) {
+                return exibirToast('O novo PIN e a confirmação não coincidem!', 'error');
+            }
+            
+            btn.disabled = true; btn.innerHTML = 'Processando...';
+
+            try {
+                // OBS: Para esta funcionalidade ser 100% real, você precisará adicionar
+                // a rota PUT /api/user/change-pin no backend (userRoutes.js).
+                const res = await fetch(`${API_URL}/user/change-pin`, {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+                    body: JSON.stringify({ oldPin, newPin })
+                });
+                const data = await res.json();
+
+                if (res.ok) {
+                    exibirToast(data.message || 'PIN atualizado com sucesso!', 'success');
+                    document.getElementById('formPin').reset();
+                    setTimeout(() => window.history.back(), 1500);
+                } else {
+                    exibirToast(data.error || 'Erro ao alterar o PIN.', 'error');
+                    btn.disabled = false; btn.innerHTML = `Atualizar PIN de Segurança <span class="material-icons text-lg">verified_user</span>`;
+                }
+            } catch (err) { 
+                exibirToast('Erro de conexão com o servidor.', 'error'); 
+                btn.disabled = false; btn.innerHTML = `Atualizar PIN de Segurança <span class="material-icons text-lg">verified_user</span>`;
+            }
+        });
+    </script>
+</body>
+</html>
