@@ -1,0 +1,819 @@
+<!DOCTYPE html>
+<html lang="pt-MZ">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Cribot - Mercado OTC</title>
+    
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;900&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons+Outlined" rel="stylesheet">
+
+    <!-- Iconify & Tailwind -->
+    <script src="https://code.iconify.design/3/3.1.0/iconify.min.js"></script>
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Gráfico TradingView e WebSockets -->
+    <script src="https://unpkg.com/lightweight-charts@3.8.0/dist/lightweight-charts.standalone.production.js"></script>
+    <script src="https://cdn.socket.io/4.7.4/socket.io.min.js"></script>
+
+    <!-- Flatpickr (Calendário Customizado) -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+    <script src="https://npmcdn.com/flatpickr/dist/l10n/pt.js"></script>
+
+    <script>
+        tailwind.config = { theme: { extend: { colors: { bitcoin: '#F7931A' }, fontFamily: { inter: ['Inter', 'sans-serif'] } } } }
+    </script>
+
+    <style>
+        body { font-family: 'Inter', sans-serif; background-color: #f8fafc; overflow: hidden; touch-action: none; -webkit-tap-highlight-color: transparent; }
+        input[type="number"]::-webkit-inner-spin-button, input[type="number"]::-webkit-outer-spin-button { -webkit-appearance: none; margin: 0; }
+        #tv_chart a { display: none !important; opacity: 0 !important; pointer-events: none !important; }
+        .modal-overlay { background-color: rgba(0, 0, 0, 0.4); backdrop-filter: blur(2px); opacity: 0; pointer-events: none; transition: opacity 0.3s ease; }
+        .modal-overlay.active { opacity: 1; pointer-events: all; }
+        .modal-content { transform: translateY(100%); transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1); }
+        .modal-overlay.active .modal-content { transform: translateY(0); }
+        select { -webkit-appearance: none; appearance: none; }
+        .flatpickr-calendar { font-family: 'Inter', sans-serif !important; border: none !important; box-shadow: 0 10px 25px rgba(0,0,0,0.1) !important; border-radius: 1rem !important; }
+        .flatpickr-day.selected { background: #111827 !important; border-color: #111827 !important; }
+    </style>
+</head>
+
+<body class="h-screen flex flex-col bg-white relative">
+
+    <!-- ÁUDIOS PROFISSIONAIS (FICHEIROS LOCAIS NA PASTA ASSETS) -->
+    <audio id="soundClick" src="assets/click.wav" preload="auto"></audio>
+    <audio id="soundWin" src="assets/ganho.mp3" preload="auto"></audio>
+    <audio id="soundLoss" src="assets/perda.mp3" preload="auto"></audio>
+    <audio id="soundTick" src="assets/contagem.mp3" preload="auto"></audio>
+
+    <!-- MODAL TOAST NOTIFICAÇÕES -->
+    <div id="toastPopup" class="fixed top-6 left-1/2 transform -translate-x-1/2 -translate-y-[200%] px-5 py-3.5 rounded-[1rem] flex items-center gap-3 text-white font-medium transition-all duration-500 opacity-0 z-[9999] min-w-max border shadow-2xl pointer-events-none">
+        <span id="toastIcon" class="material-icons text-xl">info</span>
+        <span id="toastMsg" class="text-[0.85rem] font-bold">Notificação</span>
+    </div>
+
+    <!-- CABEÇALHO SUPERIOR -->
+    <div class="bg-white pt-4 pb-3 px-4 md:ml-64 border-b border-gray-100 flex justify-between items-center z-40 shrink-0">
+        <div class="flex items-center gap-2.5">
+            <span class="iconify text-bitcoin text-[2.2rem]" data-icon="cryptocurrency-color:btc"></span>
+            <div class="flex flex-col justify-center">
+                <span class="text-sm font-black text-gray-900 leading-none tracking-tight">CRIBOT OTC</span>
+                <span class="text-[0.60rem] font-bold text-gray-400 uppercase mt-1">Ao Vivo <span class="text-[#00c853] animate-pulse text-xs">●</span></span>
+            </div>
+        </div>
+        <div class="flex flex-col items-end justify-center">
+            <div class="flex items-center gap-2 mb-0.5">
+                <button onclick="alternarSom()" class="text-gray-400 hover:text-gray-900 active:scale-95 transition-transform" title="Ligar/Desligar Som">
+                    <span class="material-icons text-sm" id="iconeSom">volume_up</span>
+                </button>
+                <span class="text-[0.55rem] font-bold text-gray-400 uppercase tracking-widest">Saldo Real</span>
+            </div>
+            <span class="text-base sm:text-lg font-black text-[#00c853] leading-none transition-all duration-500" id="userBalanceTrade">0,00 MT</span>
+        </div>
+    </div>
+
+    <!-- ÁREA PRINCIPAL DO GRÁFICO -->
+    <main class="flex-1 w-full relative z-10 md:ml-64 md:max-w-[calc(100%-16rem)] flex flex-col bg-gray-50">
+        <div class="absolute top-3 left-3 z-20 flex gap-2">
+            <button onclick="mudarTempo('1m', event)" class="tf-btn bg-gray-900 text-white border border-gray-900 px-3 py-1.5 rounded-md text-[0.65rem] font-black uppercase shadow-sm">1M</button>
+            <button onclick="mudarTempo('5m', event)" class="tf-btn bg-white text-gray-600 border border-gray-200 px-3 py-1.5 rounded-md text-[0.65rem] font-bold uppercase shadow-sm">5M</button>
+            <button onclick="mudarTempo('15m', event)" class="tf-btn bg-white text-gray-600 border border-gray-200 px-3 py-1.5 rounded-md text-[0.65rem] font-bold uppercase shadow-sm">15M</button>
+            <button onclick="mudarTempo('1h', event)" class="tf-btn bg-white text-gray-600 border border-gray-200 px-3 py-1.5 rounded-md text-[0.65rem] font-bold uppercase shadow-sm">1H</button>
+        </div>
+
+        <button onclick="abrirModalContratos()" class="absolute top-16 left-3 z-20 bg-gray-900 text-white w-10 h-10 rounded-lg flex items-center justify-center shadow-md active:scale-95 transition-transform border border-gray-700">
+            <span class="material-icons text-xl">work_outline</span>
+            <span id="activeDot" class="absolute -top-1 -right-1 flex h-3 w-3 hidden">
+              <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-bitcoin opacity-75"></span>
+              <span class="relative inline-flex rounded-full h-3 w-3 bg-bitcoin border border-gray-900"></span>
+            </span>
+        </button>
+
+        <div id="tv_chart" class="w-full h-full absolute inset-0"></div>
+    </main>
+
+    <!-- PAINEL DE TRADING CLARO -->
+    <div class="bg-white border-t border-gray-200 w-full px-4 pt-3 pb-20 md:pb-4 shadow-[0_-10px_25px_rgba(0,0,0,0.03)] shrink-0 z-20 md:ml-64 md:max-w-[calc(100%-16rem)] rounded-t-2xl relative -mt-3">
+        <div class="flex justify-between items-center mb-3 px-1">
+            <div class="flex items-center gap-2">
+                <span class="iconify text-bitcoin text-lg" data-icon="cryptocurrency-color:btc"></span>
+                <span class="font-bold text-gray-900 text-sm">Bitcoin OTC</span>
+                <span class="text-[#F7931A] font-black text-sm">92%</span>
+            </div>
+        </div>
+
+        <div class="flex gap-3 mb-2">
+            <!-- CRONÔMETRO -->
+            <div class="flex-1 bg-gray-50 border border-gray-200 rounded-xl px-2 relative flex flex-col justify-end h-[52px]" id="durationDropdownWrapper">
+                <span class="text-[0.60rem] text-gray-500 font-bold uppercase tracking-widest absolute top-1.5 left-3 z-10 pointer-events-none">Cronômetro</span>
+                
+                <div id="durationSelected" class="w-full h-full pt-4 pb-1 text-center bg-transparent font-black text-lg text-gray-900 cursor-pointer flex justify-center items-center" onclick="toggleDurationDropdown()">
+                    00:01:00
+                </div>
+                
+                <div id="durationOptions" class="hidden absolute bottom-[110%] left-0 w-full bg-white border border-gray-200 shadow-[0_-5px_15px_rgba(0,0,0,0.1)] rounded-xl overflow-hidden z-50">
+                    <div class="p-3 text-center font-bold text-gray-900 border-b border-gray-100 hover:bg-gray-100 cursor-pointer active:bg-gray-200" onclick="selectDuration(15, '00:00:15')">00:00:15</div>
+                    <div class="p-3 text-center font-bold text-gray-900 border-b border-gray-100 hover:bg-gray-100 cursor-pointer active:bg-gray-200" onclick="selectDuration(30, '00:00:30')">00:00:30</div>
+                    <div class="p-3 text-center font-bold text-bitcoin border-b border-gray-100 hover:bg-gray-100 cursor-pointer bg-orange-50" onclick="selectDuration(60, '00:01:00')">00:01:00</div>
+                    <div class="p-3 text-center font-bold text-gray-900 border-b border-gray-100 hover:bg-gray-100 cursor-pointer active:bg-gray-200" onclick="selectDuration(120, '00:02:00')">00:02:00</div>
+                    <div class="p-3 text-center font-bold text-gray-900 hover:bg-gray-100 cursor-pointer active:bg-gray-200" onclick="selectDuration(300, '00:05:00')">00:05:00</div>
+                </div>
+                
+                <span class="material-icons absolute right-1 top-[18px] text-gray-400 pointer-events-none text-xl">arrow_drop_down</span>
+                <input type="hidden" id="tradeDuration" value="60">
+            </div>
+
+            <!-- INVESTIMENTO -->
+            <div class="flex-1 bg-gray-50 border border-gray-200 rounded-xl px-2 relative flex flex-col justify-end h-[52px]">
+                <span class="text-[0.60rem] text-gray-500 font-bold uppercase tracking-widest absolute top-1.5 left-3">Investimento</span>
+                <div class="flex justify-between items-center w-full">
+                    <button onclick="alterarValor(-50)" class="text-gray-400 hover:text-gray-900 p-1 active:scale-90 transition-transform"><span class="material-icons text-[1.2rem]">remove</span></button>
+                    <input type="number" id="tradeAmount" value="50" class="w-full text-center bg-transparent font-black text-lg text-gray-900 focus:outline-none" oninput="calcularPayout()">
+                    <button onclick="alterarValor(50)" class="text-gray-400 hover:text-gray-900 p-1 active:scale-90 transition-transform"><span class="material-icons text-[1.2rem]">add</span></button>
+                </div>
+            </div>
+        </div>
+
+        <div class="flex justify-between items-center px-1 mb-3">
+            <span class="text-[0.70rem] text-gray-500 font-bold uppercase">Pagamento Calculado</span>
+            <span class="text-base font-black text-[#00c853]" id="payoutCalc">96,00 MT</span>
+        </div>
+
+        <div class="flex gap-3" id="tradeButtons">
+            <button onclick="iniciarTrade('call')" class="flex-1 bg-[#00c853] text-white py-3.5 rounded-xl font-black text-lg active:scale-95 transition-transform flex items-center justify-between px-5 shadow-sm">
+                <span class="text-left leading-none tracking-tight">Para cima</span>
+                <span class="material-icons text-[1.6rem] opacity-90 leading-none">arrow_upward</span>
+            </button>
+            <button onclick="iniciarTrade('put')" class="flex-1 bg-[#ff1744] text-white py-3.5 rounded-xl font-black text-lg active:scale-95 transition-transform flex items-center justify-between px-5 shadow-sm">
+                <span class="text-left leading-none tracking-tight">Para baixo</span>
+                <span class="material-icons text-[1.6rem] opacity-90 leading-none">arrow_downward</span>
+            </button>
+        </div>
+    </div>
+
+    <!-- MODAL DE CONTRATOS E HISTÓRICO -->
+    <div id="contratosModal" class="fixed inset-0 z-50 modal-overlay flex flex-col justify-end">
+        <div class="bg-white w-full max-w-4xl mx-auto rounded-t-3xl h-[70vh] flex flex-col modal-content shadow-2xl relative">
+            <div class="flex justify-between items-center p-5">
+                <div class="flex items-center gap-2">
+                    <div class="bg-gray-100 text-gray-900 w-8 h-8 rounded-lg flex items-center justify-center"><span class="material-icons">work_outline</span></div>
+                    <h3 class="font-black text-gray-900 text-lg">Operações</h3>
+                </div>
+                <button onclick="fecharModalContratos()" class="text-gray-400 hover:text-gray-900 bg-gray-50 rounded-full p-2 active:scale-95 transition-colors">
+                    <span class="material-icons">close</span>
+                </button>
+            </div>
+            
+            <div class="flex gap-6 border-b border-gray-100 px-5 mb-4">
+                <button id="tabAtivos" onclick="mudarAba('ativos')" class="pb-3 border-b-2 border-bitcoin font-bold text-gray-900 text-sm focus:outline-none">Em Aberto</button>
+                <button id="tabHistorico" onclick="mudarAba('historico')" class="pb-3 border-b-2 border-transparent font-medium text-gray-400 text-sm hover:text-gray-900 transition-colors focus:outline-none">Histórico (B.D)</button>
+            </div>
+
+            <div id="conteudoAtivos" class="flex-1 overflow-y-auto px-5 pb-safe flex flex-col gap-3"></div>
+
+            <div id="conteudoHistorico" class="hidden flex-1 overflow-y-auto px-5 pb-safe flex-col">
+                <div class="flex flex-col gap-3 mb-4 shrink-0">
+                    
+                    <div class="relative w-full" id="filterDropdownWrapper">
+                        <div id="filterSelected" class="bg-gray-50 border border-gray-200 text-sm rounded-xl px-4 py-3 w-full font-bold focus:outline-none text-gray-700 shadow-sm cursor-pointer flex items-center justify-between" onclick="toggleFilterDropdown()">
+                            Hoje
+                            <span class="material-icons text-gray-400 text-lg">expand_more</span>
+                        </div>
+                        
+                        <div id="filterOptions" class="hidden absolute top-full left-0 w-full bg-white border border-gray-200 shadow-[0_5px_15px_rgba(0,0,0,0.1)] rounded-xl mt-2 overflow-hidden z-50">
+                            <div class="px-4 py-3 font-bold text-gray-900 border-b border-gray-100 hover:bg-gray-100 cursor-pointer" onclick="selectFilter('hoje', 'Hoje')">Hoje</div>
+                            <div class="px-4 py-3 font-bold text-gray-900 border-b border-gray-100 hover:bg-gray-100 cursor-pointer" onclick="selectFilter('mes', 'Mês Passado')">Mês Passado</div>
+                            <div class="px-4 py-3 font-bold text-gray-900 border-b border-gray-100 hover:bg-gray-100 cursor-pointer" onclick="selectFilter('3meses', 'Últimos 3 Meses')">Últimos 3 Meses</div>
+                            <div class="px-4 py-3 font-bold text-gray-900 hover:bg-gray-100 cursor-pointer" onclick="selectFilter('personalizado', 'Data Personalizada...')">Data Personalizada...</div>
+                        </div>
+                        <input type="hidden" id="filtroData" value="hoje">
+                    </div>
+
+                    <!-- CALENDÁRIOS FLATPICKR -->
+                    <div id="datasPersonalizadas" class="hidden flex gap-2 w-full mt-1">
+                        <div class="flex-1">
+                            <label class="text-[0.60rem] font-bold text-gray-400 uppercase ml-1 block mb-0.5">Início</label>
+                            <input type="text" id="dataInicio" placeholder="Selecione..." class="bg-gray-50 border border-gray-200 text-xs font-bold rounded-xl px-2 py-2.5 w-full text-gray-900 focus:outline-none placeholder-gray-400 cursor-pointer">
+                        </div>
+                        <div class="flex-1">
+                            <label class="text-[0.60rem] font-bold text-gray-400 uppercase ml-1 block mb-0.5">Fim</label>
+                            <input type="text" id="dataFim" placeholder="Selecione..." class="bg-gray-50 border border-gray-200 text-xs font-bold rounded-xl px-2 py-2.5 w-full text-gray-900 focus:outline-none placeholder-gray-400 cursor-pointer">
+                        </div>
+                        <div class="flex flex-col justify-end">
+                            <button onclick="carregarHistorico()" class="bg-gray-900 text-white h-[40px] w-10 rounded-xl shadow-md active:scale-95 transition-transform flex items-center justify-center">
+                                <span class="material-icons text-[1.2rem]">search</span>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+                
+                <div id="listaHistorico" class="flex flex-col gap-3 pb-4"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- BOTTOM NAVIGATION -->
+    <nav class="md:hidden fixed bottom-0 left-0 w-full bg-white border-t border-gray-200 z-50 pb-safe">
+        <div class="flex justify-between items-center h-16 px-4 sm:px-6">
+            <a href="dashboard.html" class="flex flex-col items-center justify-center text-gray-400 hover:text-gray-900 w-14 transition-colors">
+                <img src="https://i.ibb.co/HThdL6Zc/76505-removebg-preview.png" alt="Início" class="h-6 w-6 object-contain mb-1">
+                <span class="text-[0.65rem] font-medium">Início</span>
+            </a>
+            
+            <a href="mercado.html" class="flex flex-col items-center justify-center text-bitcoin w-14 transition-transform active:scale-95">
+                <span class="iconify text-[1.40rem] mb-1" data-icon="cryptocurrency-color:btc"></span>
+                <span class="text-[0.65rem] font-bold">Mercado</span>
+            </a>
+            
+            <a href="auto.html" class="flex flex-col items-center justify-center text-gray-400 hover:text-gray-900 w-14 transition-colors">
+                <img src="https://i.ibb.co/S4Z2THnC/77032-removebg-preview.png" alt="Auto" class="h-6 w-6 object-contain mb-1">
+                <span class="text-[0.65rem] font-medium">Auto</span>
+            </a>
+
+            <a href="equipa.html" class="flex flex-col items-center justify-center text-gray-400 hover:text-gray-900 w-14 transition-colors">
+                <img src="https://i.ibb.co/1fFPT3J0/teams-3d-icon-png-download-8894250.png" alt="Equipa" class="h-6 w-6 object-contain mb-1">
+                <span class="text-[0.65rem] font-medium">Equipa</span>
+            </a>
+
+            <a href="perfil.html" class="flex flex-col items-center justify-center text-gray-400 hover:text-gray-900 w-14 transition-colors">
+                <img src="https://i.ibb.co/RTrC0N4B/1780052456588.png" alt="Perfil" class="h-6 w-6 object-contain mb-1">
+                <span class="text-[0.65rem] font-medium">Perfil</span>
+            </a>
+        </div>
+    </nav>
+
+    <!-- SIDEBAR DESKTOP -->
+    <aside class="hidden md:flex flex-col fixed top-0 left-0 w-64 h-screen bg-white border-r border-gray-100 z-30 pt-8 shadow-sm">
+        <div class="px-6 mb-8 flex items-center gap-3">
+            <img src="https://i.ibb.co/V07K9jG2/Boneco-3-D-CRIBOT-com-Dinheiro.png" alt="Logo" class="h-10 object-contain">
+            <span class="font-bold text-xl text-gray-900">Cribot</span>
+        </div>
+        <a href="dashboard.html" class="flex items-center gap-3 px-6 py-4 text-gray-500 hover:bg-gray-50 hover:text-gray-900 font-medium transition-colors">
+            <img src="https://i.ibb.co/HThdL6Zc/76505-removebg-preview.png" class="h-5 w-5 object-contain"> Início
+        </a>
+        <a href="mercado.html" class="flex items-center gap-3 px-6 py-4 text-bitcoin bg-orange-50 font-bold border-r-4 border-bitcoin">
+            <span class="iconify text-xl" data-icon="cryptocurrency-color:btc"></span> Mercado OTC
+        </a>
+        <a href="auto.html" class="flex items-center gap-3 px-6 py-4 text-gray-500 hover:bg-gray-50 hover:text-gray-900 font-medium transition-colors">
+            <img src="https://i.ibb.co/S4Z2THnC/77032-removebg-preview.png" class="h-5 w-5 object-contain"> Robôs Auto
+        </a>
+        <a href="equipa.html" class="flex items-center gap-3 px-6 py-4 text-gray-500 hover:bg-gray-50 hover:text-gray-900 font-medium transition-colors">
+            <img src="https://i.ibb.co/1fFPT3J0/teams-3d-icon-png-download-8894250.png" class="h-5 w-5 object-contain"> Minha Equipa
+        </a>
+        <a href="perfil.html" class="flex items-center gap-3 px-6 py-4 text-gray-500 hover:bg-gray-50 hover:text-gray-900 font-medium transition-colors">
+            <img src="https://i.ibb.co/RTrC0N4B/1780052456588.png" class="h-5 w-5 object-contain"> Meu Perfil
+        </a>
+    </aside>
+
+    <script>
+        // Inicializa os calendários customizados
+        flatpickr("#dataInicio", { locale: "pt", dateFormat: "Y-m-d", disableMobile: "true" });
+        flatpickr("#dataFim", { locale: "pt", dateFormat: "Y-m-d", disableMobile: "true" });
+
+        const API_URL = 'https://twoou3.onrender.com/api';
+        let token = localStorage.getItem('token');
+        const formatMT = (value) => Number(value).toLocaleString('pt-MZ', { minimumFractionDigits: 2 }) + ' MT';
+        
+        let chart;
+        let candleSeries;
+        let currentBar = null;
+        let currentIntervalSeconds = 60;
+        
+        let actualPrice = 0; 
+        let socket = null;
+        let animationFrameId = null;
+
+        let targetPrice = 0;
+        let animatedPrice = 0;
+        let serverCandleTime = null;
+
+        let contratosAtivos = JSON.parse(localStorage.getItem('activeTradesMem')) || [];
+
+        // ============================================
+        // SISTEMA DE EFEITOS SONOROS (SFX)
+        // ============================================
+        let somAtivo = localStorage.getItem('somCribot') !== 'desativado'; 
+        
+        document.addEventListener("DOMContentLoaded", () => {
+            document.getElementById('iconeSom').innerText = somAtivo ? 'volume_up' : 'volume_off';
+        });
+
+        function alternarSom() {
+            somAtivo = !somAtivo;
+            localStorage.setItem('somCribot', somAtivo ? 'ativo' : 'desativado');
+            document.getElementById('iconeSom').innerText = somAtivo ? 'volume_up' : 'volume_off';
+        }
+
+        function tocarSom(id) {
+            if (!somAtivo) return; 
+            const audio = document.getElementById(id);
+            if (audio) {
+                audio.currentTime = 0;
+                audio.play().catch(()=>{}); 
+            }
+        }
+
+        // Animação de Saldo
+        function animarSaldo(el, start, end) {
+            const duration = 1200;
+            const startTime = performance.now();
+            function update(time) {
+                const elapsed = time - startTime;
+                const progress = Math.min(elapsed / duration, 1);
+                const current = start + (end - start) * progress;
+                el.textContent = formatMT(current);
+                if (progress < 1) requestAnimationFrame(update);
+            }
+            requestAnimationFrame(update);
+            el.classList.add('scale-110');
+            setTimeout(()=> el.classList.remove('scale-110'), 300);
+        }
+
+        document.addEventListener('click', (e) => {
+            if (!e.target.closest('#durationDropdownWrapper')) {
+                document.getElementById('durationOptions').classList.add('hidden');
+            }
+            if (!e.target.closest('#filterDropdownWrapper')) {
+                const fOpt = document.getElementById('filterOptions');
+                if(fOpt) fOpt.classList.add('hidden');
+            }
+        });
+
+        function toggleDurationDropdown() {
+            document.getElementById('durationOptions').classList.toggle('hidden');
+        }
+
+        function selectDuration(val, text) {
+            document.getElementById('tradeDuration').value = val;
+            document.getElementById('durationSelected').innerText = text;
+            document.getElementById('durationOptions').classList.add('hidden');
+            
+            const childs = document.getElementById('durationOptions').children;
+            for(let c of childs) {
+                c.classList.remove('text-bitcoin', 'bg-orange-50');
+                c.classList.add('text-gray-900');
+            }
+            event.target.classList.add('text-bitcoin', 'bg-orange-50');
+            event.target.classList.remove('text-gray-900');
+        }
+
+        function toggleFilterDropdown() {
+            document.getElementById('filterOptions').classList.toggle('hidden');
+        }
+
+        function selectFilter(val, text) {
+            document.getElementById('filtroData').value = val;
+            document.getElementById('filterSelected').innerHTML = `${text} <span class="material-icons text-gray-400 text-lg">expand_more</span>`;
+            document.getElementById('filterOptions').classList.add('hidden');
+            
+            if (val === 'personalizado') {
+                document.getElementById('datasPersonalizadas').classList.remove('hidden');
+            } else {
+                document.getElementById('datasPersonalizadas').classList.add('hidden');
+                carregarHistorico();
+            }
+        }
+
+        function exibirToast(texto, tipo = 'error') {
+            const caixa = document.getElementById('toastPopup');
+            const icon = document.getElementById('toastIcon');
+            const msg = document.getElementById('toastMsg');
+
+            caixa.classList.remove('bg-red-500', 'border-red-600', 'bg-gray-900', 'border-gray-800');
+            
+            if (tipo === 'error') {
+                 caixa.classList.add('bg-red-500', 'border-red-600'); 
+                 icon.textContent = "error_outline"; 
+                 tocarSom('soundLoss'); 
+            } else {
+                 caixa.classList.add('bg-gray-900', 'border-gray-800'); 
+                 icon.textContent = "check_circle"; 
+            }
+
+            msg.textContent = texto;
+
+            caixa.style.transform = 'translate(-50%, 0)';
+            caixa.style.opacity = '1';
+
+            setTimeout(() => {
+                caixa.style.transform = 'translate(-50%, -200%)';
+                caixa.style.opacity = '0';
+            }, 3500); 
+        }
+
+        function salvarTradesLocal() {
+            const dados = contratosAtivos.map(ct => ({ 
+                id: ct.id, amount: ct.amount, direction: ct.direction, pair: ct.pair, 
+                initialDuration: ct.initialDuration, tempoFaltante: ct.tempoFaltante, 
+                entryPrice: ct.entryPrice, startTime: ct.startTime, countdownPlayed: ct.countdownPlayed 
+            }));
+            localStorage.setItem('activeTradesMem', JSON.stringify(dados));
+        }
+
+        function getIntervalSeconds(intervalo) {
+            switch(intervalo) { case '1m': return 60; case '5m': return 300; case '15m': return 900; case '1h': return 3600; default: return 60; }
+        }
+
+        function renderizarGrafico(intervalo = '1m') {
+            const container = document.getElementById('tv_chart');
+            container.innerHTML = ''; 
+            
+            if(animationFrameId) { cancelAnimationFrame(animationFrameId); animationFrameId = null; }
+
+            currentIntervalSeconds = getIntervalSeconds(intervalo);
+
+            chart = LightweightCharts.createChart(container, {
+                width: container.clientWidth,
+                height: container.clientHeight,
+                layout: { backgroundColor: '#f8fafc', textColor: '#64748b' },
+                grid: { vertLines: { color: 'rgba(226, 232, 240, 0.6)', style: 3 }, horzLines: { color: 'rgba(226, 232, 240, 0.6)', style: 3 } },
+                crosshair: { mode: LightweightCharts.CrosshairMode.Normal },
+                rightPriceScale: { borderColor: 'transparent', autoScale: true },
+                timeScale: { borderColor: 'transparent', timeVisible: true, secondsVisible: false, barSpacing: 16, rightOffset: 12 }
+            });
+
+            candleSeries = chart.addCandlestickSeries({
+                upColor: '#00c853', downColor: '#ff1744', borderVisible: false,
+                wickUpColor: '#00c853', wickDownColor: '#ff1744',
+            });
+
+            window.addEventListener('resize', () => { chart.resize(container.clientWidth, container.clientHeight); });
+
+            fetch(`${API_URL}/otc/history?interval=${intervalo}`)
+                .then(res => res.json())
+                .then(data => {
+                    candleSeries.setData(data);
+                    
+                    const agora = Date.now();
+                    contratosAtivos = contratosAtivos.filter(ct => {
+                        const passados = Math.floor((agora - ct.startTime) / 1000);
+                        ct.tempoFaltante = ct.initialDuration - passados;
+                        return ct.tempoFaltante > 0;
+                    });
+                    
+                    salvarTradesLocal();
+
+                    if(contratosAtivos.length > 0) {
+                        document.getElementById('activeDot').classList.remove('hidden');
+                    }
+
+                    contratosAtivos.forEach(ct => {
+                        ct.priceLine = candleSeries.createPriceLine({
+                            price: ct.entryPrice, color: ct.direction === 'call' ? '#00c853' : '#ff1744', lineWidth: 2, lineStyle: 0, axisLabelVisible: true, title: ct.direction === 'call' ? 'COMPRA' : 'VENDA'
+                        });
+                        iniciarIntervaloRecuperado(ct);
+                    });
+
+                    currentBar = data[data.length - 1];
+                    actualPrice = currentBar.close;
+
+                    iniciarEscutaServidorOTC();
+                });
+        }
+
+        function iniciarEscutaServidorOTC() {
+            if (!socket) {
+                socket = io(API_URL.replace('/api', ''));
+                socket.on('otc_tick', (data) => {
+                    targetPrice = data.price;
+                    serverCandleTime = data.candleTime; 
+                    if (animatedPrice === 0) animatedPrice = targetPrice;
+                });
+            }
+
+            function animate() {
+                if (targetPrice !== 0 && animatedPrice !== 0 && currentBar && serverCandleTime) {
+                    const diff = targetPrice - animatedPrice;
+                    animatedPrice += diff * 0.15; 
+
+                    const displayPrice = Math.round(animatedPrice * 100) / 100;
+                    actualPrice = displayPrice;
+
+                    const candleTime = Math.floor(serverCandleTime / currentIntervalSeconds) * currentIntervalSeconds;
+
+                    if (currentBar.time === candleTime) {
+                        currentBar.close = displayPrice;
+                        currentBar.high = Math.max(currentBar.high, targetPrice);
+                        currentBar.low = Math.min(currentBar.low, targetPrice);
+                    } else if (candleTime > currentBar.time) {
+                        currentBar = { time: candleTime, open: displayPrice, high: Math.max(displayPrice, targetPrice), low: Math.min(displayPrice, targetPrice), close: displayPrice };
+                    }
+                    
+                    candleSeries.update(currentBar);
+                    atualizarPlEmTempoReal();
+                }
+                animationFrameId = requestAnimationFrame(animate);
+            }
+            animate();
+        }
+
+        function atualizarPlEmTempoReal() {
+            contratosAtivos.forEach(ct => {
+                const spanPl = document.getElementById(`pl_${ct.id}`);
+                if (spanPl) {
+                    let isWin = false;
+                    if (ct.direction === 'call' && actualPrice > ct.entryPrice) isWin = true;
+                    if (ct.direction === 'put' && actualPrice < ct.entryPrice) isWin = true;
+
+                    if (isWin) {
+                        const profit = ct.amount * 0.92;
+                        spanPl.innerHTML = `<span class="text-[#00c853] font-black">+${formatMT(profit)}</span>`;
+                    } else {
+                        spanPl.innerHTML = `<span class="text-[#ff1744] font-black">-${formatMT(ct.amount)}</span>`;
+                    }
+                }
+            });
+        }
+
+        function mudarTempo(intervalo, event) {
+            document.querySelectorAll('.tf-btn').forEach(btn => {
+                btn.classList.remove('bg-gray-900', 'text-white', 'border-gray-900');
+                btn.classList.add('bg-white', 'text-gray-600', 'border-gray-200');
+            });
+            event.target.classList.add('bg-gray-900', 'text-white', 'border-gray-900');
+            event.target.classList.remove('bg-white', 'text-gray-600', 'border-gray-200');
+            renderizarGrafico(intervalo);
+        }
+
+        let currentBalanceGlobal = 0; 
+        document.addEventListener("DOMContentLoaded", async () => {
+            if (!token) window.location.href = 'index.html';
+            renderizarGrafico('1m'); 
+            calcularPayout();
+            await carregarSaldo();
+        });
+
+        function calcularPayout() {
+            let val = Number(document.getElementById('tradeAmount').value) || 0;
+            if(val < 0) { val = 0; document.getElementById('tradeAmount').value = 0; }
+            const payoutCalc = val + (val * 0.92); 
+            document.getElementById('payoutCalc').textContent = formatMT(payoutCalc);
+        }
+
+        function alterarValor(delta) {
+            const input = document.getElementById('tradeAmount');
+            let val = Number(input.value) || 0;
+            val += delta;
+            if(val < 50) val = 50; 
+            input.value = val;
+            calcularPayout();
+        }
+
+        async function carregarSaldo() {
+            try {
+                const res = await fetch(`${API_URL}/user/dashboard`, { headers: { 'Authorization': `Bearer ${token}` } });
+                const data = await res.json();
+                if (res.ok) {
+                    const blElement = document.getElementById('userBalanceTrade');
+                    if (currentBalanceGlobal !== 0 && data.user.balance !== currentBalanceGlobal) {
+                        animarSaldo(blElement, currentBalanceGlobal, data.user.balance);
+                    } else {
+                        blElement.textContent = formatMT(data.user.balance);
+                    }
+                    currentBalanceGlobal = data.user.balance;
+                }
+            } catch (e) { }
+        }
+
+        function abrirModalContratos() {
+            document.getElementById('contratosModal').classList.add('active');
+            renderizarAtivosModal();
+        }
+
+        function fecharModalContratos() {
+            document.getElementById('contratosModal').classList.remove('active');
+        }
+
+        function mudarAba(aba) {
+            if (aba === 'ativos') {
+                document.getElementById('tabAtivos').classList.replace('border-transparent', 'border-bitcoin');
+                document.getElementById('tabAtivos').classList.replace('text-gray-400', 'text-gray-900');
+                document.getElementById('tabHistorico').classList.replace('border-bitcoin', 'border-transparent');
+                document.getElementById('tabHistorico').classList.replace('text-gray-900', 'text-gray-400');
+                document.getElementById('conteudoAtivos').classList.remove('hidden');
+                document.getElementById('conteudoHistorico').classList.add('hidden');
+            } else {
+                document.getElementById('tabHistorico').classList.replace('border-transparent', 'border-bitcoin');
+                document.getElementById('tabHistorico').classList.replace('text-gray-400', 'text-gray-900');
+                document.getElementById('tabAtivos').classList.replace('border-bitcoin', 'border-transparent');
+                document.getElementById('tabAtivos').classList.replace('text-gray-900', 'text-gray-400');
+                document.getElementById('conteudoHistorico').classList.remove('hidden');
+                document.getElementById('conteudoAtivos').classList.add('hidden');
+                carregarHistorico(); 
+            }
+        }
+
+        function iniciarTrade(direction) {
+            const amount = Number(document.getElementById('tradeAmount').value);
+            
+            if (!amount || amount < 50) return exibirToast('O valor mínimo de entrada é 50 MT!', 'error');
+
+            tocarSom('soundClick');
+
+            const durationSecs = parseInt(document.getElementById('tradeDuration').value);
+            document.getElementById('tradeButtons').classList.add('opacity-50', 'pointer-events-none');
+            setTimeout(() => document.getElementById('tradeButtons').classList.remove('opacity-50', 'pointer-events-none'), 500);
+            
+            const tempId = 'ct_' + Date.now();
+            const entryPrice = actualPrice; 
+            
+            const priceLine = candleSeries.createPriceLine({
+                price: entryPrice, color: direction === 'call' ? '#00c853' : '#ff1744', lineWidth: 2, lineStyle: 0, axisLabelVisible: true, title: direction === 'call' ? 'COMPRA' : 'VENDA'
+            });
+
+            const contratoObj = { 
+                id: tempId, amount, direction, pair: 'BTC OTC', 
+                initialDuration: durationSecs, tempoFaltante: durationSecs, 
+                entryPrice: entryPrice, startTime: Date.now(), priceLine: priceLine,
+                countdownPlayed: false 
+            };
+            
+            contratosAtivos.push(contratoObj);
+            salvarTradesLocal(); 
+
+            document.getElementById('activeDot').classList.remove('hidden'); 
+            abrirModalContratos(); 
+            mudarAba('ativos');
+
+            iniciarIntervaloRecuperado(contratoObj);
+        }
+
+        function iniciarIntervaloRecuperado(ct) {
+            const interval = setInterval(async () => {
+                const passados = Math.floor((Date.now() - ct.startTime) / 1000);
+                ct.tempoFaltante = ct.initialDuration - passados;
+
+                const tempoRelogio = document.getElementById(`clock_${ct.id}`);
+                if (tempoRelogio) tempoRelogio.innerText = `${ct.tempoFaltante > 0 ? ct.tempoFaltante : 0}s`;
+
+                if (ct.tempoFaltante <= 5 && ct.tempoFaltante > 0 && !ct.countdownPlayed) {
+                    tocarSom('soundTick');
+                    ct.countdownPlayed = true; 
+                    salvarTradesLocal();
+                }
+
+                if (ct.tempoFaltante <= 0) {
+                    clearInterval(interval);
+                    await confirmarResultadoBackend(ct, actualPrice); 
+                }
+            }, 1000);
+        }
+
+        async function confirmarResultadoBackend(ct, exitPrice) {
+            try {
+                const res = await fetch(`${API_URL}/user/trade`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+                    body: JSON.stringify({ amount: ct.amount, direction: ct.direction, pair: ct.pair, entryPrice: ct.entryPrice, exitPrice: exitPrice })
+                });
+                const data = await res.json();
+
+                if (ct.priceLine) candleSeries.removePriceLine(ct.priceLine);
+                contratosAtivos = contratosAtivos.filter(c => c.id !== ct.id);
+                salvarTradesLocal(); 
+
+                if(contratosAtivos.length === 0) document.getElementById('activeDot').classList.add('hidden');
+
+                if (res.ok) {
+                    carregarSaldo(); 
+                    exibirResultadoNaListaDeAtivos(data.trade);
+                    
+                    if (data.trade.status === 'won') tocarSom('soundWin');
+                    else tocarSom('soundLoss');
+
+                } else {
+                    exibirToast(data.error || 'Não foi possível processar a entrada.', 'error');
+                }
+            } catch (err) { 
+                exibirToast('Sem conexão. Verifique a internet e tente recarregar.', 'error'); 
+            }
+        }
+
+        function renderizarAtivosModal() {
+            const container = document.getElementById('conteudoAtivos');
+            const html = contratosAtivos.map(ct => {
+                if(document.getElementById(`ct_card_${ct.id}`)) return '';
+                return `
+                <div id="ct_card_${ct.id}" class="bg-white border border-gray-200 shadow-sm rounded-xl p-4 flex justify-between items-center relative">
+                    <div class="flex items-center gap-3">
+                        <div class="${ct.direction === 'call' ? 'bg-[#00c853]' : 'bg-[#ff1744]'} text-white w-10 h-10 flex items-center justify-center rounded-lg shadow-sm shrink-0">
+                            <span class="material-icons">${ct.direction === 'call' ? 'arrow_upward' : 'arrow_downward'}</span>
+                        </div>
+                        <div class="flex flex-col">
+                            <span class="font-bold text-gray-900">${ct.pair}</span>
+                            <span class="font-black text-gray-900 text-sm">${formatMT(ct.amount)}</span>
+                        </div>
+                    </div>
+                    <div class="text-right flex flex-col items-end gap-1">
+                        <div id="pl_${ct.id}" class="text-sm font-bold text-gray-400">0 MT</div>
+                        <div id="clock_${ct.id}" class="bg-gray-900 text-bitcoin font-black text-[0.70rem] px-2 py-1 rounded-md text-center shadow-inner tracking-widest uppercase border border-gray-700">
+                            ${ct.tempoFaltante > 0 ? ct.tempoFaltante : 0}s
+                        </div>
+                    </div>
+                </div>`;
+            }).join('');
+
+            if (html !== '') {
+                const concluidos = container.innerHTML.includes('Concluído') ? container.innerHTML.split('<!-- separator -->')[1] || '' : '';
+                if(container.innerHTML.includes('Sem operações')) container.innerHTML = '';
+                const vivosExistentes = container.innerHTML.split('<!-- separator -->')[0] || '';
+                container.innerHTML = html + vivosExistentes + '<!-- separator -->' + concluidos;
+            }
+        }
+
+        function exibirResultadoNaListaDeAtivos(trade) {
+            const container = document.getElementById('conteudoAtivos');
+            const isWin = trade.status === 'won';
+            const cardAntigo = document.getElementById(`ct_card_${trade.id || 'antigo'}`); 
+            if(cardAntigo) cardAntigo.remove();
+
+            let vivosHTML = '';
+            contratosAtivos.forEach(ct => {
+                const existing = document.getElementById(`ct_card_${ct.id}`);
+                if(existing) vivosHTML += existing.outerHTML;
+            });
+
+            const html = `
+                <div class="bg-gray-50 border border-gray-200 shadow-sm rounded-xl p-4 flex justify-between items-center animate-pulse">
+                    <div class="flex items-center gap-3">
+                        <div class="${isWin ? 'bg-[#00c853]' : 'bg-[#ff1744]'} text-white w-10 h-10 flex items-center justify-center rounded-lg shadow-md shrink-0">
+                            <span class="material-icons">${isWin ? 'arrow_upward' : 'arrow_downward'}</span>
+                        </div>
+                        <div class="flex flex-col">
+                            <span class="font-bold text-gray-900">${trade.pair} <span class="text-[0.65rem] text-gray-500 font-bold ml-1 border border-gray-200 bg-white px-1 py-0.5 rounded uppercase">Concluído</span></span>
+                            <span class="text-[0.65rem] text-gray-400 uppercase font-bold mt-0.5">${trade.direction}</span>
+                        </div>
+                    </div>
+                    <div class="text-right flex flex-col items-end">
+                        <span class="text-[0.60rem] ${isWin ? 'text-[#00c853]' : 'text-[#ff1744]'} uppercase font-black">${isWin ? 'Lucro' : 'Perda'}</span>
+                        <p class="font-black ${isWin ? 'text-[#00c853]' : 'text-[#ff1744]'} text-lg">${isWin ? '+' : '-'}${formatMT(Math.abs(trade.amount * (isWin ? 0.92 : 1)))}</p>
+                    </div>
+                </div>
+            `;
+            
+            const concluidosExistentes = container.innerHTML.includes('<!-- separator -->') ? container.innerHTML.split('<!-- separator -->')[1] : '';
+            container.innerHTML = vivosHTML + '<!-- separator -->' + html + concluidosExistentes;
+            
+            if(contratosAtivos.length === 0 && !container.innerHTML.includes('Concluído')) {
+                container.innerHTML = `<div class="flex flex-col items-center justify-center mt-10 text-gray-400 opacity-60"><span class="material-icons text-4xl mb-2">inbox</span><p class="text-sm font-medium">Sem operações ativas.</p></div>`;
+            }
+        }
+
+        async function carregarHistorico() {
+            const filtro = document.getElementById('filtroData').value;
+            const container = document.getElementById('listaHistorico');
+            let query = '';
+            
+            container.innerHTML = `<div class="flex justify-center mt-5"><svg class="animate-spin h-6 w-6 text-bitcoin" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z"></path></svg></div>`;
+
+            const hoje = new Date();
+            if (filtro === 'hoje') query = `?startDate=${new Date(hoje.setHours(0,0,0,0)).toISOString()}`;
+            else if (filtro === 'mes') { const mesPassado = new Date(); mesPassado.setMonth(mesPassado.getMonth() - 1); query = `?startDate=${mesPassado.toISOString()}`; }
+            else if (filtro === '3meses') { const tresMeses = new Date(); tresMeses.setMonth(tresMeses.getMonth() - 3); query = `?startDate=${tresMeses.toISOString()}`; }
+            else if (filtro === 'personalizado') {
+                const di = document.getElementById('dataInicio').value; const df = document.getElementById('dataFim').value;
+                if (di) query += `?startDate=${new Date(di).toISOString()}`;
+                if (df) query += (query ? '&' : '?') + `endDate=${new Date(df).setHours(23,59,59,999)}`;
+            }
+
+            try {
+                const res = await fetch(`${API_URL}/user/trades${query}`, { headers: { 'Authorization': `Bearer ${token}` } });
+                const trades = await res.json();
+                
+                if (trades.length === 0) {
+                    container.innerHTML = `<div class="flex flex-col items-center justify-center mt-10 text-gray-400 opacity-60"><span class="material-icons text-4xl mb-2">history</span><p class="text-sm font-medium">Nenhum registro para esta data.</p></div>`;
+                    return;
+                }
+
+                container.innerHTML = trades.map(trade => {
+                    const isWin = trade.status === 'won';
+                    const dataFormatada = new Date(trade.createdAt).toLocaleString('pt-MZ', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' });
+                    return `
+                        <div class="bg-white border border-gray-100 shadow-sm rounded-xl p-4 flex justify-between items-center">
+                            <div class="flex items-center gap-3">
+                                <div class="${isWin ? 'bg-[#00c853]' : 'bg-[#ff1744]'} text-white w-10 h-10 flex items-center justify-center rounded-lg shadow-sm shrink-0">
+                                    <span class="material-icons">${isWin ? 'arrow_upward' : 'arrow_downward'}</span>
+                                </div>
+                                <div class="flex flex-col">
+                                    <span class="font-bold text-gray-900">${trade.pair}</span>
+                                    <span class="text-[0.65rem] text-gray-400 font-medium mt-0.5">${dataFormatada}</span>
+                                </div>
+                            </div>
+                            <div class="text-right flex flex-col items-end">
+                                <span class="text-[0.60rem] ${isWin ? 'text-[#00c853]' : 'text-[#ff1744]'} uppercase font-black">${isWin ? 'Lucro' : 'Perda'}</span>
+                                <p class="font-black ${isWin ? 'text-[#00c853]' : 'text-[#ff1744]'} text-[1.10rem]">${isWin ? '+' : '-'}${formatMT(Math.abs(trade.amount * (isWin ? 0.92 : 1)))}</p>
+                            </div>
+                        </div>
+                    `;
+                }).join('');
+            } catch (err) { 
+                container.innerHTML = `<p class="text-center text-red-500 text-sm font-bold mt-5">Erro de conexão.</p>`; 
+            }
+        }
+    </script>
+</body>
+</html>

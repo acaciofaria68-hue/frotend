@@ -1,0 +1,269 @@
+<!DOCTYPE html>
+<html lang="pt-MZ">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Cribot - Minha Equipa</title>
+    
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;900&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons+Outlined" rel="stylesheet">
+
+    <script src="https://code.iconify.design/3/3.1.0/iconify.min.js"></script>
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <script>
+        tailwind.config = {
+            theme: { extend: { colors: { bitcoin: '#F7931A' }, fontFamily: { inter: ['Inter', 'sans-serif'] } } }
+        }
+    </script>
+
+    <style>
+        body { font-family: 'Inter', sans-serif; background-color: #f8fafc; -webkit-tap-highlight-color: transparent; }
+    </style>
+</head>
+
+<body class="min-h-screen flex flex-col pb-24 md:pb-8 bg-gray-50 relative">
+
+    <div id="toastPopup" class="fixed top-6 left-1/2 transform -translate-x-1/2 -translate-y-[200%] px-5 py-3.5 rounded-[1rem] flex items-center gap-3 text-white font-medium transition-all duration-500 opacity-0 z-[9999] min-w-max border shadow-2xl pointer-events-none">
+        <span id="toastIcon" class="material-icons text-xl">info</span>
+        <span id="toastMsg" class="text-[0.85rem] font-bold">Notificação</span>
+    </div>
+
+    <!-- CABEÇALHO -->
+    <div class="bg-gradient-to-r from-gray-900 to-gray-800 pt-8 pb-16 px-5 md:ml-64 border-none rounded-b-[2rem] z-0 shadow-lg relative overflow-hidden">
+        <div class="absolute -right-4 -top-4 w-32 h-32 bg-bitcoin/20 rounded-full blur-3xl"></div>
+        <div class="relative z-10">
+            <h1 class="text-3xl font-black text-white mb-2">Minha Equipa</h1>
+            <p class="text-sm text-gray-300 font-medium">Convide amigos e ganhe comissões automáticas.</p>
+        </div>
+    </div>
+
+    <main class="flex-1 w-full max-w-4xl mx-auto px-5 -mt-10 flex flex-col gap-6 relative z-10 md:ml-64 md:max-w-[calc(100%-16rem)]">
+        
+        <!-- CARD LINK DE CONVITE -->
+        <div class="bg-white rounded-[2rem] p-6 sm:p-8 border border-gray-100 shadow-xl relative overflow-hidden flex min-h-[190px]">
+            <div class="flex flex-col z-10 w-[60%] sm:w-2/3 pr-2 justify-center">
+                <h3 class="font-black text-gray-900 text-xl sm:text-2xl mb-1.5 leading-tight">Convide e Ganhe</h3>
+                <p class="text-[0.70rem] sm:text-[0.80rem] text-gray-500 font-medium leading-snug mb-5">
+                    Compartilhe e ganhe bônus em dinheiro sempre que a sua equipa lucrar ou investir em novas máquinas.
+                </p>
+                
+                <div class="w-full">
+                    <span class="text-[0.60rem] font-bold text-gray-400 uppercase tracking-widest block mb-1.5 ml-1">Seu Link de Convite</span>
+                    <div class="flex items-center justify-between bg-gray-50 border border-gray-200 rounded-2xl p-1 shadow-inner relative">
+                        <span id="referralCodeText" class="font-bold text-xs sm:text-sm text-gray-900 tracking-wide pl-4 flex-1 select-all truncate">Gerando link...</span>
+                        <button onclick="copiarCodigo()" class="bg-gray-900 hover:bg-black text-white h-11 w-11 rounded-xl flex items-center justify-center shrink-0 active:scale-95 transition-transform shadow-md border border-gray-800 ml-2">
+                            <span class="material-icons text-base">content_copy</span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- IMAGEM RESTAURADA COMO SOLICITADO -->
+            <img src="https://i.ibb.co/QVrx9wS/Adobe-Express-file-2.png" alt="Equipa e Bônus" class="absolute -right-2 bottom-[-10px] sm:top-1/2 sm:-translate-y-1/2 sm:-right-4 h-40 w-40 sm:h-52 sm:w-52 object-contain drop-shadow-2xl z-0 pointer-events-none transform scale-110">
+        </div>
+
+        <!-- ESTATÍSTICAS DE REDE E COMISSÕES -->
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div class="bg-[#FF5E00] rounded-[2rem] p-6 shadow-xl relative overflow-hidden flex items-center border border-[#FF8C00] min-h-[120px]">
+                <div class="flex flex-col justify-center relative z-10">
+                    <span class="text-[0.60rem] font-bold text-white/90 uppercase tracking-widest mb-1">Total Convidados</span>
+                    <span class="text-4xl font-black text-white leading-none tracking-tight" id="totalReferralsCount">0</span>
+                </div>
+                <img src="https://i.ibb.co/yc477DgD/Adobe-Express-file-1.png" alt="Rede" class="absolute -right-2 top-1/2 transform -translate-y-1/2 h-28 w-28 object-contain drop-shadow-2xl z-0 pointer-events-none scale-110">
+            </div>
+
+            <div class="bg-gray-900 rounded-[2rem] p-6 shadow-xl relative overflow-hidden flex items-center border border-gray-800 min-h-[120px]">
+                <div class="flex flex-col justify-center relative z-10 w-[60%] sm:w-2/3">
+                    <span class="text-[0.60rem] font-bold text-gray-400 uppercase tracking-widest mb-1">Total Comissões</span>
+                    <span class="text-2xl sm:text-3xl font-black text-[#00c853] leading-none tracking-tight truncate" id="totalComissoes">0,00 MT</span>
+                </div>
+                <img src="https://i.ibb.co/1ftDFS40/Adobe-Express-file-4.png" alt="Comissões" class="absolute -right-2 top-1/2 transform -translate-y-1/2 h-28 w-28 object-contain drop-shadow-2xl z-0 pointer-events-none scale-110">
+            </div>
+        </div>
+
+        <!-- LISTA DE INDICADOS -->
+        <div>
+            <h3 class="text-lg font-black text-gray-900 mb-4">Sua Rede</h3>
+            <div id="referralsContainer" class="flex flex-col gap-3">
+                <div class="flex justify-center py-6 text-gray-400">
+                    <svg class="animate-spin h-8 w-8 text-bitcoin" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z"></path></svg>
+                </div>
+            </div>
+        </div>
+
+    </main>
+
+    <!-- MENU INFERIOR MOBILE -->
+    <nav class="md:hidden fixed bottom-0 left-0 w-full bg-white border-t border-gray-100 z-30 pb-safe shadow-[0_-4px_10px_rgba(0,0,0,0.03)]">
+        <div class="flex justify-between items-center h-16 px-4 sm:px-6">
+            <a href="dashboard.html" class="flex flex-col items-center justify-center text-gray-400 hover:text-gray-900 w-14 transition-colors">
+                <img src="https://i.ibb.co/HThdL6Zc/76505-removebg-preview.png" alt="Início" class="h-6 w-6 object-contain mb-1">
+                <span class="text-[0.65rem] font-medium">Início</span>
+            </a>
+            <a href="mercado.html" class="flex flex-col items-center justify-center text-gray-400 hover:text-gray-900 w-14 transition-colors">
+                <span class="iconify text-[1.40rem] mb-1" data-icon="cryptocurrency-color:btc"></span>
+                <span class="text-[0.65rem] font-medium">Mercado</span>
+            </a>
+            <a href="auto.html" class="flex flex-col items-center justify-center text-gray-400 hover:text-gray-900 w-14 transition-colors">
+                <img src="https://i.ibb.co/S4Z2THnC/77032-removebg-preview.png" alt="Auto" class="h-6 w-6 object-contain mb-1">
+                <span class="text-[0.65rem] font-medium">Auto</span>
+            </a>
+            <!-- EQUIPA ATIVA -->
+            <a href="equipa.html" class="flex flex-col items-center justify-center text-bitcoin w-14 transition-transform active:scale-95">
+                <img src="https://i.ibb.co/1fFPT3J0/teams-3d-icon-png-download-8894250.png" alt="Equipa" class="h-6 w-6 object-contain mb-1">
+                <span class="text-[0.65rem] font-bold">Equipa</span>
+            </a>
+            <a href="perfil.html" class="flex flex-col items-center justify-center text-gray-400 hover:text-gray-900 w-14 transition-colors">
+                <img src="https://i.ibb.co/RTrC0N4B/1780052456588.png" alt="Perfil" class="h-6 w-6 object-contain mb-1">
+                <span class="text-[0.65rem] font-medium">Perfil</span>
+            </a>
+        </div>
+    </nav>
+
+    <!-- MENU LATERAL DESKTOP -->
+    <aside class="hidden md:flex flex-col fixed top-0 left-0 w-64 h-screen bg-white border-r border-gray-100 z-30 pt-8 shadow-sm">
+        <div class="px-6 mb-8 flex items-center gap-3">
+            <img src="https://i.ibb.co/V07K9jG2/Boneco-3-D-CRIBOT-com-Dinheiro.png" alt="Logo" class="h-10 object-contain">
+            <span class="font-bold text-xl text-gray-900">Cribot</span>
+        </div>
+        <a href="dashboard.html" class="flex items-center gap-3 px-6 py-4 text-gray-500 hover:bg-gray-50 hover:text-gray-900 font-medium transition-colors">
+            <img src="https://i.ibb.co/HThdL6Zc/76505-removebg-preview.png" class="h-5 w-5 object-contain"> Início
+        </a>
+        <a href="mercado.html" class="flex items-center gap-3 px-6 py-4 text-gray-500 hover:bg-gray-50 hover:text-gray-900 font-medium transition-colors">
+            <span class="iconify text-xl" data-icon="cryptocurrency-color:btc"></span> Mercado OTC
+        </a>
+        <a href="auto.html" class="flex items-center gap-3 px-6 py-4 text-gray-500 hover:bg-gray-50 hover:text-gray-900 font-medium transition-colors">
+            <img src="https://i.ibb.co/S4Z2THnC/77032-removebg-preview.png" class="h-5 w-5 object-contain"> Robôs Auto
+        </a>
+        <a href="equipa.html" class="flex items-center gap-3 px-6 py-4 text-bitcoin bg-orange-50 font-bold border-r-4 border-bitcoin">
+            <img src="https://i.ibb.co/1fFPT3J0/teams-3d-icon-png-download-8894250.png" class="h-5 w-5 object-contain"> Minha Equipa
+        </a>
+        <a href="perfil.html" class="flex items-center gap-3 px-6 py-4 text-gray-500 hover:bg-gray-50 hover:text-gray-900 font-medium transition-colors">
+            <img src="https://i.ibb.co/RTrC0N4B/1780052456588.png" class="h-5 w-5 object-contain"> Meu Perfil
+        </a>
+    </aside>
+
+    <script>
+        const API_URL = 'https://twoou3.onrender.com/api';
+        let token = localStorage.getItem('token');
+        let myLinkUrl = ""; 
+        const formatMT = (value) => Number(value).toLocaleString('pt-MZ', { minimumFractionDigits: 2 }) + ' MT';
+
+        document.addEventListener("DOMContentLoaded", async () => {
+            if (!token) { window.location.href = 'index.html'; return; }
+            await carregarEquipa();
+        });
+
+        function exibirToast(texto, tipo = 'error') {
+            const caixa = document.getElementById('toastPopup');
+            const icon = document.getElementById('toastIcon');
+            const msg = document.getElementById('toastMsg');
+
+            caixa.classList.remove('bg-red-500', 'border-red-600', 'bg-gray-900', 'border-gray-800');
+            if (tipo === 'error') {
+                 caixa.classList.add('bg-red-500', 'border-red-600'); icon.textContent = "error_outline"; 
+            } else {
+                 caixa.classList.add('bg-gray-900', 'border-gray-800'); icon.textContent = "check_circle"; 
+            }
+            msg.textContent = texto;
+            caixa.style.transform = 'translate(-50%, 0)';
+            caixa.style.opacity = '1';
+
+            setTimeout(() => {
+                caixa.style.transform = 'translate(-50%, -200%)';
+                caixa.style.opacity = '0';
+            }, 3000); 
+        }
+
+        async function carregarEquipa() {
+            try {
+                const resDash = await fetch(`${API_URL}/user/dashboard`, { headers: { 'Authorization': `Bearer ${token}` } });
+                const dataDash = await resDash.json();
+                
+                if (resDash.ok && dataDash.user) {
+                    const myCode = dataDash.user.referralCode;
+                    
+                    // Constrói o link usando a URL do backend (se definida no ENV) ou o domínio em que o app está rodando.
+                    const baseUrl = dataDash.frontendUrl || window.location.origin;
+                    myLinkUrl = `${baseUrl}/index.html?ref=${myCode}`;
+                    
+                    document.getElementById('referralCodeText').textContent = myLinkUrl;
+                } else if (resDash.status === 401) {
+                    localStorage.removeItem('token'); window.location.href = 'index.html';
+                }
+
+                const resHist = await fetch(`${API_URL}/user/history`, { headers: { 'Authorization': `Bearer ${token}` } });
+                const dataHist = await resHist.json();
+                
+                if (resHist.ok) {
+                    let totalComissoes = 0;
+                    if (dataHist.transactions) {
+                        const comissoes = dataHist.transactions.filter(t => t.type === 'referral_bonus' && t.status === 'completed');
+                        totalComissoes = comissoes.reduce((acc, curr) => acc + curr.amount, 0);
+                    }
+                    document.getElementById('totalComissoes').textContent = formatMT(totalComissoes);
+                    renderizarReferrals(dataHist.referrals);
+                }
+            } catch (err) {
+                exibirToast('Sem ligação ao servidor.', 'error');
+            }
+        }
+
+        function renderizarReferrals(referrals) {
+            const container = document.getElementById('referralsContainer');
+            document.getElementById('totalReferralsCount').textContent = referrals ? referrals.length : 0;
+
+            if (!referrals || referrals.length === 0) {
+                container.innerHTML = `
+                <div class="bg-gradient-to-r from-[#FF5E00] to-[#F7931A] shadow-xl rounded-[2rem] p-6 relative overflow-hidden border border-[#FF8C00] min-h-[160px] flex items-center justify-end">
+                    <img src="https://i.ibb.co/yF5PMBrw/1780009313419.png" alt="Sem Membros" class="absolute bottom-0 left-0 sm:left-4 h-40 w-40 sm:h-44 sm:w-44 object-contain object-bottom drop-shadow-xl z-0 pointer-events-none">
+                    <div class="flex flex-col z-10 w-[55%] sm:w-[65%]">
+                        <h4 class="font-black text-white text-lg sm:text-xl leading-tight mb-2">A sua equipa está vazia!</h4>
+                        <p class="text-[0.70rem] sm:text-sm text-white/90 font-medium leading-snug">
+                            Copie o seu link de acesso acima, convide amigos e comece a gerar lucros de comissão hoje mesmo.
+                        </p>
+                    </div>
+                </div>
+                `;
+                return;
+            }
+
+            container.innerHTML = referrals.map(ref => {
+                const dataFormatada = new Date(ref.createdAt).toLocaleDateString('pt-MZ', { day: '2-digit', month: 'short', year: 'numeric' });
+                const init = ref.name ? ref.name.charAt(0).toUpperCase() : 'U';
+
+                return `
+                <div class="bg-white border border-gray-100 shadow-sm rounded-xl p-4 flex justify-between items-center transition-transform active:scale-[0.98]">
+                    <div class="flex items-center gap-3">
+                        <div class="w-10 h-10 rounded-full bg-gradient-to-br from-[#FF5E00] to-[#F7931A] flex items-center justify-center text-white font-black text-lg shrink-0 shadow-sm border border-orange-200">
+                            ${init}
+                        </div>
+                        <div class="flex flex-col">
+                            <span class="font-bold text-gray-900 text-sm leading-tight">${ref.name}</span>
+                            <span class="text-[0.65rem] text-gray-400 font-medium mt-0.5">${ref.email}</span>
+                        </div>
+                    </div>
+                    <div class="flex flex-col items-end justify-center">
+                        <span class="text-[0.60rem] font-bold text-gray-400 uppercase tracking-widest">Aderiu a</span>
+                        <span class="text-xs font-black text-gray-700">${dataFormatada}</span>
+                    </div>
+                </div>
+                `;
+            }).join('');
+        }
+
+        function copiarCodigo() {
+            if (!myLinkUrl) return;
+            navigator.clipboard.writeText(myLinkUrl).then(() => {
+                exibirToast('Link copiado para a área de transferência!', 'success');
+            }).catch(() => {
+                exibirToast('Erro ao copiar link.', 'error');
+            });
+        }
+    </script>
+</body>
+</html>

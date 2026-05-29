@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cribot - Acesso</title>
+    
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: { extend: { colors: { bitcoin: '#F7931A' }, fontFamily: { inter: ['Inter', 'sans-serif'] } } }
+        }
+    </script>
+
+    <style>
+        body { font-family: 'Inter', sans-serif; background-color: #FFFFFF; -webkit-tap-highlight-color: transparent; }
+        input:-webkit-autofill {
+            -webkit-box-shadow: 0 0 0 40px #ffffff inset !important;
+            box-shadow: 0 0 0 40px #ffffff inset !important;
+            -webkit-text-fill-color: #111827 !important;
+        }
+        .marquee-container {
+            width: 100vw; margin-left: calc(-50vw + 50%); overflow: hidden; white-space: nowrap;
+        }
+        .marquee-text {
+            display: inline-block; animation: marquee 15s linear infinite; font-size: 0.90rem; font-weight: 700; letter-spacing: 0.15em;
+        }
+        @keyframes marquee { 0% { transform: translateX(0); } 100% { transform: translateX(-50%); } }
+    </style>
+</head>
+<body class="min-h-screen flex flex-col items-center pt-6 pb-12 px-4 bg-white overflow-x-hidden relative font-inter">
+
+    <!-- IMAGEM -->
+    <div class="w-full flex justify-center block">
+        <img src="https://i.ibb.co/V07K9jG2/Boneco-3-D-CRIBOT-com-Dinheiro.png" alt="Cribot App" class="h-56 sm:h-72 lg:h-80 object-contain align-bottom">
+    </div>
+
+    <!-- CARROSSEL -->
+    <div class="marquee-container mb-10 bg-bitcoin py-2 border-y border-orange-400">
+        <div class="marquee-text text-white flex items-center">
+            ACESSO &nbsp;&bull;&nbsp; LOGIN &nbsp;&bull;&nbsp; ACESSO &nbsp;&bull;&nbsp; LOGIN &nbsp;&bull;&nbsp; ACESSO &nbsp;&bull;&nbsp; LOGIN &nbsp;&bull;&nbsp; ACESSO &nbsp;&bull;&nbsp; LOGIN &nbsp;&bull;&nbsp; ACESSO &nbsp;&bull;&nbsp; LOGIN &nbsp;&bull;&nbsp; ACESSO &nbsp;&bull;&nbsp; LOGIN &nbsp;&bull;&nbsp;
+        </div>
+    </div>
+
+    <!-- FORMULÁRIO COMPLETO -->
+    <div class="w-full max-w-xl bg-transparent relative">
+
+        <div class="mb-10 w-full border-b border-gray-200 pb-5">
+            <h1 class="text-[2rem] sm:text-[2.5rem] font-bold text-gray-900 tracking-tight leading-none mb-1">Acessar Conta</h1>
+            <p class="font-light text-gray-500 mt-2 text-[0.95rem]">Insira seu e-mail e senha para gerenciar seus robôs.</p>
+        </div>
+        
+        <form id="loginForm" class="w-full flex flex-col">
+            <div class="flex flex-col gap-y-8">
+                
+                <!-- EMAIL -->
+                <div class="relative w-full">
+                    <label for="email" class="absolute -top-2.5 left-3 bg-white px-1 text-[0.75rem] font-medium text-gray-600 z-10 peer-focus:text-bitcoin">E-Mail de Acesso</label>
+                    <input type="email" id="email" required placeholder="Ex: meuemail@gmail.com" 
+                        class="peer block w-full rounded-md border border-gray-300 py-3.5 px-4 text-gray-900 placeholder:text-gray-400 focus:border-bitcoin focus:ring-1 focus:ring-bitcoin focus:outline-none transition-all bg-white">
+                </div>
+
+                <!-- SENHA -->
+                <div class="relative w-full">
+                    <label for="password" class="absolute -top-2.5 left-3 bg-white px-1 text-[0.75rem] font-medium text-gray-600 z-10 peer-focus:text-bitcoin">Sua Senha Forte</label>
+                    <input type="password" id="password" required placeholder="Sua senha de cadastro" 
+                        class="peer block w-full rounded-md border border-gray-300 py-3.5 px-4 text-gray-900 placeholder:text-gray-400 focus:border-bitcoin focus:ring-1 focus:ring-bitcoin focus:outline-none transition-all bg-white">
+                </div>
+            </div>
+
+            <div class="mt-12 flex flex-col md:flex-row items-center justify-between gap-6 border-none">
+                <p class="text-gray-500 text-sm md:text-base font-light">
+                    Não tem uma conta? 
+                    <a href="index.html" class="font-medium text-gray-900 underline decoration-1 underline-offset-4 hover:text-bitcoin transition-colors ml-1">Cadastre-se</a>
+                </p>
+
+                <button type="submit" id="submitBtn" class="w-full md:w-auto min-w-[260px] bg-gray-900 text-white font-bold py-3.5 px-8 rounded-md flex justify-center items-center hover:bg-black transition-colors active:scale-95">
+                    <span id="btnText" class="flex gap-2 items-center tracking-wide">Entrar no Sistema <span class="material-icons text-[1.1rem]">login</span></span>
+                </button>
+            </div>
+        </form>
+    </div>
+
+    <!-- TOAST -->
+    <div id="toastPopup" class="fixed top-6 left-1/2 transform -translate-x-1/2 -translate-y-[200%] px-5 py-3 rounded-md flex items-center gap-3 text-white font-medium transition-all duration-300 opacity-0 z-50 min-w-max border">
+        <span id="toastIcon" class="material-icons">info</span>
+        <span id="toastMsg" class="text-sm">Notificação</span>
+    </div>
+
+    <script>
+        // Redireciona para o painel se já estiver logado
+        if(localStorage.getItem('token')) {
+            window.location.href = 'dashboard.html';
+        }
+
+        document.getElementById('loginForm').addEventListener('submit', async function(e) {
+            e.preventDefault(); 
+            
+            const email = document.getElementById('email').value.trim();
+            const password = document.getElementById('password').value;
+
+            const btn = document.getElementById('submitBtn');
+            const btnOriginal = btn.innerHTML;
+            
+            btn.disabled = true;
+            btn.innerHTML = `<svg class="animate-spin h-6 w-6 text-white" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4" fill="none"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z"></path></svg>`;
+
+            try {
+                const res = await fetch('https://twoou3.onrender.com/api/auth/login', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ email, password })
+                });
+
+                const data = await res.json();
+
+                if (res.ok) {
+                    exibirToast('Acesso liberado! Redirecionando...', 'success');
+                    
+                    // Salva o Token JWT no Navegador
+                    localStorage.setItem('token', data.token);
+                    
+                    // Redireciona
+                    setTimeout(() => window.location.href = 'dashboard.html', 1500); 
+                } else {
+                    exibirToast(data.error || 'Credenciais inválidas.', 'error');
+                }
+            } catch (err) {
+                 exibirToast('Servidor demorou a responder.', 'error');
+            } finally {
+                btn.disabled = false;
+                btn.innerHTML = btnOriginal;
+            }
+        });
+
+        function exibirToast(texto, tipo) {
+            const toast = document.getElementById('toastPopup');
+            const icon = document.getElementById('toastIcon');
+            const msg = document.getElementById('toastMsg');
+
+            toast.classList.remove('bg-red-500', 'border-red-600', 'bg-gray-800', 'border-gray-900');
+            if (tipo === 'error') {
+                 toast.classList.add('bg-red-500', 'border-red-600'); icon.textContent = "error_outline"; 
+            } else {
+                 toast.classList.add('bg-gray-800', 'border-gray-900'); icon.textContent = "check_circle"; 
+            }
+            msg.textContent = texto;
+
+            toast.classList.remove('-translate-y-[200%]', 'opacity-0');
+            toast.classList.add('translate-y-4', 'opacity-100');
+
+            setTimeout(() => {
+                toast.classList.remove('translate-y-4', 'opacity-100');
+                toast.classList.add('-translate-y-[200%]', 'opacity-0');
+            }, 3000); 
+        }
+    </script>
+</body>
+</html>

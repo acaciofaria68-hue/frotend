@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cribot - Registro Aberto</title>
+    
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: { bitcoin: '#F7931A' },
+                    fontFamily: { inter: ['Inter', 'sans-serif'] }
+                }
+            }
+        }
+    </script>
+
+    <style>
+        body { font-family: 'Inter', sans-serif; background-color: #FFFFFF; }
+        input:-webkit-autofill {
+            -webkit-box-shadow: 0 0 0 40px #ffffff inset !important;
+            box-shadow: 0 0 0 40px #ffffff inset !important;
+            -webkit-text-fill-color: #111827 !important;
+        }
+        .marquee-container {
+            width: 100vw; margin-left: calc(-50vw + 50%); overflow: hidden; white-space: nowrap;
+        }
+        .marquee-text {
+            display: inline-block; animation: marquee 15s linear infinite; font-size: 0.90rem; font-weight: 700; letter-spacing: 0.15em;
+        }
+        @keyframes marquee { 0% { transform: translateX(0); } 100% { transform: translateX(-50%); } }
+    </style>
+</head>
+<body class="min-h-screen flex flex-col items-center pt-6 pb-12 px-4 bg-white overflow-x-hidden relative font-inter">
+
+    <div class="w-full flex justify-center block">
+        <img src="https://i.ibb.co/V07K9jG2/Boneco-3-D-CRIBOT-com-Dinheiro.png" alt="Cribot Sistema App" class="h-56 sm:h-72 lg:h-80 object-contain bg-transparent pointer-events-none align-bottom">
+    </div>
+
+    <div class="marquee-container mb-10 bg-bitcoin py-2 shadow-sm border-y border-orange-400">
+        <div class="marquee-text text-white flex items-center">
+            CADASTRO &nbsp;&bull;&nbsp; CADASTRO &nbsp;&bull;&nbsp; CADASTRO &nbsp;&bull;&nbsp; CADASTRO &nbsp;&bull;&nbsp; CADASTRO &nbsp;&bull;&nbsp; CADASTRO &nbsp;&bull;&nbsp; CADASTRO &nbsp;&bull;&nbsp;
+        </div>
+    </div>
+
+    <div class="w-full max-w-4xl bg-transparent relative">
+        <div class="mb-10 w-full border-b border-gray-100 pb-5">
+            <h1 class="text-[2rem] sm:text-[2.5rem] font-bold text-gray-900 tracking-tight leading-none mb-1">Bem vindo</h1>
+            <p class="font-light text-gray-500 mt-2 text-[0.95rem]">Preencha os seus dados básicos abaixo para criar sua conta e acessar o sistema.</p>
+        </div>
+        
+        <form id="registerForm" class="w-full flex flex-col">
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-y-8 gap-x-8">
+                
+                <div class="relative w-full">
+                    <label for="name" class="absolute -top-2.5 left-3 bg-white px-1 text-[0.75rem] font-medium text-gray-600 z-10 peer-focus:text-bitcoin">Seu Nome completo</label>
+                    <input type="text" id="name" required placeholder="Ex: João da Silva" class="peer block w-full rounded-md border border-gray-300 py-3.5 px-4 text-gray-900 shadow-sm placeholder:text-gray-400 focus:border-bitcoin focus:ring-1 focus:ring-bitcoin focus:outline-none transition-all bg-white relative z-0">
+                </div>
+
+                <div class="relative w-full">
+                    <label for="referralCode" class="absolute -top-2.5 left-3 bg-white px-1 text-[0.75rem] font-medium text-gray-600 z-10 peer-focus:text-bitcoin">Código de Convite (Se possuir)</label>
+                    <input type="text" id="referralCode" placeholder="Ex: NQCODE9X" class="peer block w-full rounded-md border border-gray-300 py-3.5 px-4 text-gray-900 uppercase shadow-sm placeholder:text-gray-400 placeholder:normal-case focus:border-bitcoin focus:ring-1 focus:ring-bitcoin focus:outline-none transition-all bg-white relative z-0">
+                </div>
+
+                <div class="relative w-full">
+                    <label for="email" class="absolute -top-2.5 left-3 bg-white px-1 text-[0.75rem] font-medium text-gray-600 z-10 peer-focus:text-bitcoin">E-Mail de Acesso</label>
+                    <input type="email" id="email" required placeholder="Ex: meuemail@gmail.com" class="peer block w-full rounded-md border border-gray-300 py-3.5 px-4 text-gray-900 shadow-sm placeholder:text-gray-400 focus:border-bitcoin focus:ring-1 focus:ring-bitcoin focus:outline-none transition-all bg-white relative z-0">
+                </div>
+
+                <div class="relative w-full">
+                    <label for="password" class="absolute -top-2.5 left-3 bg-white px-1 text-[0.75rem] font-medium text-gray-600 z-10 peer-focus:text-bitcoin">Sua Senha Forte</label>
+                    <input type="password" id="password" required placeholder="Ex: mínimo 8 caracteres" class="peer block w-full rounded-md border border-gray-300 py-3.5 px-4 text-gray-900 shadow-sm placeholder:text-gray-400 focus:border-bitcoin focus:ring-1 focus:ring-bitcoin focus:outline-none transition-all bg-white relative z-0">
+                </div>
+            </div>
+
+            <div class="mt-12 flex flex-col md:flex-row items-center justify-between gap-6 border-none">
+                <p class="text-gray-500 text-sm md:text-base font-light">
+                    Já é parceiro da equipe? 
+                    <a href="login.html" class="font-medium font-inter text-gray-900 underline decoration-1 underline-offset-4 hover:text-bitcoin transition-colors ml-1">Acessar sua conta</a>
+                </p>
+
+                <button type="submit" id="submitBtn" class="w-full md:w-auto min-w-[260px] bg-gray-900 text-white font-bold py-3.5 px-8 rounded-md flex justify-center items-center hover:bg-black transition-all">
+                    <span id="btnText" class="flex gap-2 items-center tracking-wide"> Concluir Ingresso <span class="material-icons text-[1.1rem]">done_all</span></span>
+                </button>
+            </div>
+        </form>
+    </div>
+
+    <div id="toastPopup" class="fixed top-6 left-6 z-50 transform -translate-x-[150%] px-5 py-4 rounded-[0.8rem] flex items-center gap-4 text-white font-medium transition-all duration-500 ease-in-out pointer-events-none drop-shadow-xl opacity-0 shadow-xl border border-white/10">
+        <span id="toastIcon" class="material-icons text-[1.4rem]">info</span>
+        <span id="toastMsg" class="text-sm pr-1">Notificação</span>
+    </div>
+
+    <script>
+        // Leitura automática do link de convite na URL
+        document.addEventListener("DOMContentLoaded", () => {
+            const urlParams = new URLSearchParams(window.location.search);
+            const refCode = urlParams.get('ref');
+            if (refCode) {
+                const refInput = document.getElementById('referralCode');
+                refInput.value = refCode.toUpperCase();
+                refInput.setAttribute('readonly', 'true');
+                refInput.classList.add('bg-gray-50', 'text-gray-500');
+            }
+        });
+
+        document.getElementById('registerForm').addEventListener('submit', async function(e) {
+            e.preventDefault(); 
+            
+            const name = document.getElementById('name').value;
+            const email = document.getElementById('email').value;
+            const password = document.getElementById('password').value;
+            const referralCodeInput = document.getElementById('referralCode').value.toUpperCase().trim();
+            const defaultBackPin = "1234"; 
+
+            const btn = document.getElementById('submitBtn');
+            const btnOriginal = btn.className;
+            
+            btn.className = "w-full md:w-auto min-w-[260px] bg-transparent text-gray-900 flex justify-center py-3.5 items-center pointer-events-none cursor-progress";
+            btn.disabled = true;
+            btn.innerHTML = `<svg class="animate-spin h-8 w-8 text-gray-900" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-10 border-none" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-100" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z"></path></svg>`;
+
+            try {
+                const req = await fetch('https://twoou3.onrender.com/api/auth/register', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ name, email, password, pin: defaultBackPin, referralCode: referralCodeInput || null })
+                });
+
+                const res = await req.json();
+
+                if (req.ok) {
+                    exibirToastAlerta('Conta criada! Redirecionando para login...', 'success');
+                    setTimeout(() => window.location.href = 'login.html', 1500); 
+                } else {
+                    exibirToastAlerta(res.error || 'Erro ao completar o cadastro.', 'error');
+                }
+            } catch (err) {
+                 exibirToastAlerta('Servidor demorou a responder.', 'error');
+            } finally {
+                setTimeout(() => {
+                    btn.disabled = false;
+                    btn.className = btnOriginal;
+                    btn.innerHTML = `<span class="flex gap-2 items-center tracking-wide"> Concluir Ingresso <span class="material-icons text-[1.1rem]">done_all</span></span>`;
+                }, 1800); 
+            }
+        });
+
+        function exibirToastAlerta(texto, tipo) {
+            const caixa = document.getElementById('toastPopup');
+            const icon = document.getElementById('toastIcon');
+            const msg = document.getElementById('toastMsg');
+
+            caixa.classList.remove('bg-red-600', 'bg-green-600');
+            if (tipo === 'error') {
+                 caixa.classList.add('bg-red-600'); icon.textContent = "emergency"; 
+            } else {
+                 caixa.classList.add('bg-green-600'); icon.textContent = "check_circle_outline"; 
+            }
+            msg.textContent = texto;
+
+            caixa.classList.remove('-translate-x-[150%]', 'opacity-0');
+            caixa.classList.add('translate-x-0', 'opacity-100');
+
+            setTimeout(() => {
+                caixa.classList.remove('translate-x-0', 'opacity-100');
+                caixa.classList.add('-translate-x-[150%]', 'opacity-0');
+            }, 4500); 
+        }
+    </script>
+</body>
+</html>
