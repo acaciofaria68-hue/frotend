@@ -40,23 +40,22 @@
     <!-- FORMULÁRIO E INSTRUÇÕES -->
     <main class="flex-1 w-full max-w-lg mx-auto px-4 pt-6 flex flex-col relative z-10">
         
-        <!-- ALERTA DE TEMPO (COR SÓLIDA) -->
+        <!-- ALERTA DE TEMPO -->
         <div class="bg-red-600 text-white px-4 py-3.5 rounded-xl text-sm font-bold flex items-center justify-between mb-5 shadow-md">
             <span class="flex items-center gap-1.5"><span class="material-icons text-[1.2rem]">timer</span> Tempo para concluir</span>
             <span id="timerDisplay" class="font-black text-lg tracking-widest">05:00</span>
         </div>
 
-        <!-- DADOS DE PAGAMENTO (NOME ACIMA, NÚMERO ABAIXO + CÓPIA) -->
+        <!-- DADOS DE PAGAMENTO -->
         <div class="flex items-start gap-4 mb-6 pb-6 border-b border-gray-100" id="metodoHeader">
             <span class="text-xs text-gray-400 font-bold">A carregar detalhes de pagamento...</span>
         </div>
 
         <form id="formDeposito" class="flex flex-col gap-4">
             
-            <!-- CAIXA DE INFORMAÇÃO AZUL (COR SÓLIDA) -->
             <div class="bg-blue-600 text-white p-3.5 flex items-start gap-3 mb-2 rounded-xl shadow-md">
                 <span class="material-icons text-white text-base mt-0.5">info</span>
-                <p class="text-[0.75rem] text-white/95 font-medium leading-relaxed">Faça a transferência para o número listado acima através da sua conta e insira o ID da Transação abaixo para validar o pagamento.</p>
+                <p class="text-[0.75rem] text-white/95 font-medium leading-relaxed">Faça a transferência para o número listado acima. Pode inserir o ID da Transação ou anexar o comprovativo.</p>
             </div>
 
             <div class="flex flex-col gap-1.5 w-full">
@@ -66,7 +65,25 @@
 
             <div class="flex flex-col gap-1.5 w-full">
                 <label class="text-[0.70rem] font-bold text-gray-600 uppercase tracking-widest">ID da Transação / Referência</label>
-                <input type="text" id="depTxId" required placeholder="Ex: 8XG9..." class="w-full rounded-xl border border-gray-300 py-3.5 px-4 text-gray-900 font-black focus:border-[#00c853] focus:ring-1 focus:ring-[#00c853] outline-none transition-colors">
+                <input type="text" id="depTxId" placeholder="Ex: 8XG9... (Opcional se enviar imagem)" class="w-full rounded-xl border border-gray-300 py-3.5 px-4 text-gray-900 font-black focus:border-[#00c853] focus:ring-1 focus:ring-[#00c853] outline-none transition-colors">
+            </div>
+
+            <!-- NOVO CAMPO: UPLOAD DE COMPROVATIVO -->
+            <div class="flex flex-col gap-1.5 w-full">
+                <label class="text-[0.70rem] font-bold text-gray-600 uppercase tracking-widest">Comprovativo de Pagamento</label>
+                <div class="relative w-full">
+                    <input type="file" id="depImage" accept="image/*" class="hidden">
+                    <button type="button" onclick="document.getElementById('depImage').click()" class="w-full bg-gray-50 border border-gray-300 py-3.5 px-4 rounded-xl text-gray-700 font-bold flex items-center justify-center gap-2 hover:bg-gray-100 transition-colors">
+                        <span class="material-icons">add_photo_alternate</span> Enviar Imagem / Foto
+                    </button>
+                </div>
+                <!-- PREVIEW DA IMAGEM -->
+                <div id="imagePreviewContainer" class="hidden mt-2 relative w-full h-40 rounded-xl overflow-hidden border border-gray-200 bg-gray-50 flex items-center justify-center">
+                    <img id="imagePreview" src="" class="max-w-full max-h-full object-contain">
+                    <button type="button" onclick="removeImage()" class="absolute top-2 right-2 bg-red-500 text-white rounded-full p-1.5 shadow-md active:scale-90 transition-transform">
+                        <span class="material-icons text-sm">close</span>
+                    </button>
+                </div>
             </div>
 
             <button type="submit" id="btnDep" class="w-full bg-[#00c853] hover:bg-[#00e676] text-white font-black py-4 rounded-xl mt-4 active:scale-95 transition-transform flex justify-center items-center gap-2 shadow-md">
@@ -81,8 +98,9 @@
         let token = localStorage.getItem('token');
         let minDep = 100;
         let maxDep = 100000;
+        let selectedImageBase64 = null;
         
-        let timerSeconds = 300; // 5 minutos em segundos
+        let timerSeconds = 300; 
         let timerInterval;
 
         document.addEventListener("DOMContentLoaded", async () => {
@@ -90,6 +108,31 @@
             await carregarMetodoDePagamento();
             iniciarCronometro();
         });
+
+        // Manipulação da Imagem de Comprovativo
+        document.getElementById('depImage').addEventListener('change', function(e) {
+            const file = e.target.files[0];
+            if(file) {
+                // Validação simples de tamanho (ex: max 5MB)
+                if(file.size > 5 * 1024 * 1024) {
+                    exibirToast('A imagem deve ter no máximo 5MB', 'error');
+                    return;
+                }
+                const reader = new FileReader();
+                reader.onload = function(evt) {
+                    selectedImageBase64 = evt.target.result;
+                    document.getElementById('imagePreview').src = selectedImageBase64;
+                    document.getElementById('imagePreviewContainer').classList.remove('hidden');
+                };
+                reader.readAsDataURL(file);
+            }
+        });
+
+        function removeImage() {
+            selectedImageBase64 = null;
+            document.getElementById('depImage').value = '';
+            document.getElementById('imagePreviewContainer').classList.add('hidden');
+        }
 
         function iniciarCronometro() {
             const timerEl = document.getElementById('timerDisplay');
@@ -134,7 +177,7 @@
                             <span class="font-black text-gray-900 text-sm leading-tight mb-1 truncate">${nome}</span>
                             <div class="flex items-center gap-2">
                                 <span class="font-black text-[#00c853] text-lg leading-tight tracking-wide" id="payNumber">${num}</span>
-                                <button onclick="copiarNumero('${num}')" class="bg-gray-100 hover:bg-gray-200 text-gray-500 p-1.5 rounded-lg active:scale-90 transition-all flex items-center justify-center">
+                                <button type="button" onclick="copiarNumero('${num}')" class="bg-gray-100 hover:bg-gray-200 text-gray-500 p-1.5 rounded-lg active:scale-90 transition-all flex items-center justify-center">
                                     <span class="material-icons text-[1rem]">content_copy</span>
                                 </button>
                             </div>
@@ -150,7 +193,7 @@
                             <span class="font-black text-gray-900 text-sm leading-tight mb-1 truncate">${nome}</span>
                             <div class="flex items-center gap-2">
                                 <span class="font-black text-[#00c853] text-lg leading-tight tracking-wide" id="payNumber">${num}</span>
-                                <button onclick="copiarNumero('${num}')" class="bg-gray-100 hover:bg-gray-200 text-gray-500 p-1.5 rounded-lg active:scale-90 transition-all flex items-center justify-center">
+                                <button type="button" onclick="copiarNumero('${num}')" class="bg-gray-100 hover:bg-gray-200 text-gray-500 p-1.5 rounded-lg active:scale-90 transition-all flex items-center justify-center">
                                     <span class="material-icons text-[1rem]">content_copy</span>
                                 </button>
                             </div>
@@ -194,20 +237,25 @@
         document.getElementById('formDeposito').addEventListener('submit', async (e) => {
             e.preventDefault();
             const amount = Number(document.getElementById('depAmount').value);
-            const txId = document.getElementById('depTxId').value;
+            const txId = document.getElementById('depTxId').value.trim();
             
             if (amount < minDep) return exibirToast(`O depósito mínimo é de ${minDep} MT.`, 'error');
             if (amount > maxDep) return exibirToast(`O depósito máximo é de ${maxDep} MT.`, 'error');
 
+            if (!txId && !selectedImageBase64) {
+                return exibirToast('Por favor, insira o ID da Transação ou envie a imagem do comprovativo.', 'error');
+            }
+
             const btn = document.getElementById('btnDep');
             btn.disabled = true; btn.innerHTML = 'Processando...';
-            clearInterval(timerInterval); // Pausa o timer enquanto envia
+            clearInterval(timerInterval); 
 
             try {
                 const res = await fetch(`${API_URL}/user/deposit`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
-                    body: JSON.stringify({ amount, txId })
+                    // Envia a imagem convertida em Base64 para o servidor
+                    body: JSON.stringify({ amount, txId, receiptImage: selectedImageBase64 })
                 });
                 const data = await res.json();
 
@@ -217,12 +265,12 @@
                 } else {
                     exibirToast(data.error, 'error');
                     btn.disabled = false; btn.innerHTML = `Confirmar Depósito <span class="material-icons text-lg">check_circle</span>`;
-                    iniciarCronometro(); // Retoma o timer em caso de erro
+                    iniciarCronometro(); 
                 }
             } catch (err) { 
                 exibirToast('Erro de conexão.', 'error'); 
                 btn.disabled = false; btn.innerHTML = `Confirmar Depósito <span class="material-icons text-lg">check_circle</span>`;
-                iniciarCronometro(); // Retoma o timer em caso de erro
+                iniciarCronometro(); 
             }
         });
     </script>
