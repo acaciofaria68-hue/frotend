@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="pt-BR">
+<html lang="pt-MZ">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -70,13 +70,19 @@
                 </div>
 
                 <div class="relative w-full">
-                    <label for="email" class="absolute -top-2.5 left-3 bg-white px-1 text-[0.75rem] font-medium text-gray-600 z-10 peer-focus:text-bitcoin">E-Mail de Acesso</label>
-                    <input type="email" id="email" required placeholder="Ex: meuemail@gmail.com" class="peer block w-full rounded-md border border-gray-300 py-3.5 px-4 text-gray-900 shadow-sm placeholder:text-gray-400 focus:border-bitcoin focus:ring-1 focus:ring-bitcoin focus:outline-none transition-all bg-white relative z-0">
+                    <label class="absolute -top-2.5 left-3 bg-white px-1 text-[0.75rem] font-medium text-gray-600 z-10">Número de Telefone</label>
+                    <div class="flex items-center bg-white border border-gray-300 rounded-md overflow-hidden focus-within:border-bitcoin focus-within:ring-1 focus-within:ring-bitcoin transition-all shadow-sm h-[52px]">
+                        <div class="flex items-center justify-center gap-2 px-3 bg-gray-50 border-r border-gray-300 h-full">
+                            <img src="https://flagcdn.com/w20/mz.png" alt="MZ" class="w-5 h-auto rounded-sm border border-gray-200">
+                            <span class="text-gray-600 font-bold text-sm">+258</span>
+                        </div>
+                        <input type="tel" id="phone" required maxlength="9" pattern="[8][2-7][0-9]{7}" placeholder="8X XXX XXXX" class="w-full h-full py-3 px-3 text-gray-900 placeholder:text-gray-400 focus:outline-none bg-white font-medium tracking-wide">
+                    </div>
                 </div>
 
                 <div class="relative w-full">
                     <label for="password" class="absolute -top-2.5 left-3 bg-white px-1 text-[0.75rem] font-medium text-gray-600 z-10 peer-focus:text-bitcoin">Sua Senha Forte</label>
-                    <input type="password" id="password" required placeholder="Ex: mínimo 8 caracteres" class="peer block w-full rounded-md border border-gray-300 py-3.5 px-4 text-gray-900 shadow-sm placeholder:text-gray-400 focus:border-bitcoin focus:ring-1 focus:ring-bitcoin focus:outline-none transition-all bg-white relative z-0">
+                    <input type="password" id="password" required placeholder="Ex: mínimo 6 caracteres" class="peer block w-full rounded-md border border-gray-300 py-3.5 px-4 text-gray-900 shadow-sm placeholder:text-gray-400 focus:border-bitcoin focus:ring-1 focus:ring-bitcoin focus:outline-none transition-all bg-white relative z-0">
                 </div>
             </div>
 
@@ -86,7 +92,7 @@
                     <a href="login.html" class="font-medium font-inter text-gray-900 underline decoration-1 underline-offset-4 hover:text-bitcoin transition-colors ml-1">Acessar sua conta</a>
                 </p>
 
-                <button type="submit" id="submitBtn" class="w-full md:w-auto min-w-[260px] bg-gray-900 text-white font-bold py-3.5 px-8 rounded-md flex justify-center items-center hover:bg-black transition-all">
+                <button type="submit" id="submitBtn" class="w-full md:w-auto min-w-[260px] bg-gray-900 text-white font-bold py-3.5 px-8 rounded-md flex justify-center items-center hover:bg-black transition-all shadow-md">
                     <span id="btnText" class="flex gap-2 items-center tracking-wide"> Concluir Ingresso <span class="material-icons text-[1.1rem]">done_all</span></span>
                 </button>
             </div>
@@ -113,11 +119,18 @@
         document.getElementById('registerForm').addEventListener('submit', async function(e) {
             e.preventDefault(); 
             
-            const name = document.getElementById('name').value;
-            const email = document.getElementById('email').value;
+            const name = document.getElementById('name').value.trim();
+            const phone = document.getElementById('phone').value.trim();
             const password = document.getElementById('password').value;
             const referralCodeInput = document.getElementById('referralCode').value.toUpperCase().trim();
             const defaultBackPin = "1234"; 
+
+            if(phone.length !== 9 || !phone.startsWith('8')) {
+                return exibirToastAlerta('O número deve conter 9 dígitos válidos.', 'error');
+            }
+            if(password.length < 6) {
+                return exibirToastAlerta('A senha deve ter pelo menos 6 caracteres.', 'error');
+            }
 
             const btn = document.getElementById('submitBtn');
             const btnOriginal = btn.className;
@@ -130,7 +143,7 @@
                 const req = await fetch('https://twoou3.onrender.com/api/auth/register', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ name, email, password, pin: defaultBackPin, referralCode: referralCodeInput || null })
+                    body: JSON.stringify({ name, phone, password, pin: defaultBackPin, referralCode: referralCodeInput || null })
                 });
 
                 const res = await req.json();
@@ -138,18 +151,17 @@
                 if (req.ok) {
                     exibirToastAlerta('Conta criada! Autenticando...', 'success');
                     
-                    // AUTO-LOGIN E REDIRECIONAMENTO DIRETO PARA O DASHBOARD
                     try {
                         const loginReq = await fetch('https://twoou3.onrender.com/api/auth/login', {
                             method: 'POST',
                             headers: { 'Content-Type': 'application/json' },
-                            body: JSON.stringify({ email, password })
+                            body: JSON.stringify({ phone, password })
                         });
                         const loginRes = await loginReq.json();
 
                         if(loginReq.ok) {
                             localStorage.setItem('token', loginRes.token);
-                            localStorage.setItem('isFirstLogin', 'true'); // Ativa o tour no dashboard
+                            localStorage.setItem('isFirstLogin', 'true');
                             setTimeout(() => window.location.href = 'dashboard.html', 1500); 
                         } else {
                             setTimeout(() => window.location.href = 'login.html', 1500);
