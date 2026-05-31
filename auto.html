@@ -58,7 +58,7 @@
         <!-- MÁQUINAS ATIVAS -->
         <div>
             <div class="flex items-center mb-4">
-                <h3 class="text-lg font-black text-gray-900">Minhas Máquinas Ativas</h3>
+                <h3 class="text-lg font-black text-gray-900">Minha Máquina Ativa</h3>
             </div>
             <div id="activeBotsContainer" class="flex flex-col gap-4">
                 <div class="flex flex-col items-center justify-center py-8 text-gray-400">
@@ -298,7 +298,7 @@
             }).join('');
         }
 
-        function renderizarLojaBots(bots, currentBotPrice) {
+        function renderizarLojaBots(bots, currentBotPrice = 0) {
             const container = document.getElementById('storeBotsContainer');
             
             if (!bots || bots.length === 0) {
@@ -311,11 +311,13 @@
                 
                 if (currentBotPrice > 0) {
                     if (bot.price <= currentBotPrice) {
+                        // BLOQUEADO - A MÁQUINA JÁ É IGUAL OU INFERIOR A ATUAL
                         btnHtml = `
                         <button disabled class="bg-gray-100 text-gray-400 font-bold py-2 px-4 rounded-xl flex items-center justify-center gap-1 border border-gray-200 cursor-not-allowed text-xs sm:text-sm">
                             Indisponível
                         </button>`;
                     } else {
+                        // UPGRADE - A MÁQUINA É MAIS CARA, DEVE PAGAR A DIFERENÇA
                         const diferenca = bot.price - currentBotPrice;
                         btnHtml = `
                         <button onclick="prepararCompraBot('${bot._id}', ${diferenca}, true)" class="bg-[#00c853] hover:bg-[#00e676] text-white font-bold py-2 px-4 rounded-xl active:scale-95 transition-transform flex items-center justify-center gap-1 shadow-sm text-xs sm:text-sm">
@@ -323,6 +325,7 @@
                         </button>`;
                     }
                 } else {
+                    // PRIMEIRA COMPRA
                     btnHtml = `
                     <button onclick="prepararCompraBot('${bot._id}', ${bot.price}, false)" class="bg-gray-900 hover:bg-black text-white font-bold py-2 px-4 rounded-xl active:scale-95 transition-transform flex items-center justify-center gap-1 shadow-md text-xs sm:text-sm">
                         Adquirir <span class="material-icons text-[1.1rem]">arrow_forward</span>
@@ -399,27 +402,33 @@
             content.classList.remove('scale-100');
             content.classList.add('scale-95');
 
-            pendingBotId = null;
-            pendingValorToPay = 0;
-            pendingIsUpgrade = false;
+            // ATENÇÃO: NÃO APAGAMOS pendingBotId AQUI PARA PERMITIR A COMPRA DEPOIS
         }
 
         async function executarCompraBot() {
             if (!pendingBotId) return;
 
+            // SALVA OS DADOS ANTES DE FECHAR O MODAL E LIMPAR AS VARIÁVEIS
+            const botIdToSend = pendingBotId; 
+            const isUpgrade = pendingIsUpgrade;
+
+            // Fecha o modal e limpa a variável *depois* de salvar o ID localmente
             fecharModalBotConfirm();
+            pendingBotId = null;
+            pendingValorToPay = 0;
+            pendingIsUpgrade = false;
 
             try {
                 const res = await fetch(`${API_URL}/user/buy-bot`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
-                    body: JSON.stringify({ botId: pendingBotId })
+                    body: JSON.stringify({ botId: botIdToSend })
                 });
                 
                 const data = await res.json();
 
                 if (res.ok) {
-                    exibirToast(pendingIsUpgrade ? 'Atualização feita com sucesso!' : 'Robô adquirido com sucesso!', 'success');
+                    exibirToast(isUpgrade ? 'Atualização feita com sucesso!' : 'Robô adquirido com sucesso!', 'success');
                     await carregarDados(); 
                 } else {
                     exibirToast(data.error || 'Erro ao processar compra.', 'error');
