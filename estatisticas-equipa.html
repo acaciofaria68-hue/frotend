@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Cribot - Estatísticas da Equipa</title>
+    <title>Cribot - Estatísticas</title>
     
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -43,18 +43,30 @@
                     <span class="material-icons text-lg">arrow_back</span>
                 </button>
                 <div>
-                    <h1 class="text-xl font-black text-gray-900 leading-tight">Ganhos de Equipa</h1>
+                    <h1 class="text-xl font-black text-gray-900 leading-tight">Estatísticas Gerais</h1>
                     <span class="text-[0.65rem] font-bold text-gray-500 uppercase tracking-widest">Detalhes e Fontes de Lucro</span>
                 </div>
             </div>
         </div>
     </div>
 
-    <main class="flex-1 w-full max-w-4xl mx-auto px-5 mt-6 flex flex-col gap-8 relative z-10 md:ml-64 md:max-w-[calc(100%-16rem)]">
+    <main class="flex-1 w-full max-w-4xl mx-auto px-5 mt-6 flex flex-col gap-6 relative z-10 md:ml-64 md:max-w-[calc(100%-16rem)]">
         
-        <!-- FILTRO DE MÊS PLANO -->
-        <div class="w-full bg-transparent border-b border-gray-200 pb-5 flex items-center justify-between">
-            <span class="font-bold text-gray-700 text-sm">Período</span>
+        <!-- ESTATÍSTICAS DE GANHOS E PERDAS NO MERCADO -->
+        <div class="grid grid-cols-2 gap-4">
+            <div class="bg-green-50 p-4 rounded-xl border border-green-200 shadow-sm flex flex-col">
+                <span class="text-[0.65rem] font-bold text-green-700 uppercase tracking-widest mb-1">Total Ganho (Mercado)</span>
+                <span class="text-lg sm:text-xl font-black text-green-600 truncate" id="statGanhos">0,00 MT</span>
+            </div>
+            <div class="bg-red-50 p-4 rounded-xl border border-red-200 shadow-sm flex flex-col">
+                <span class="text-[0.65rem] font-bold text-red-700 uppercase tracking-widest mb-1">Total Perdido (Mercado)</span>
+                <span class="text-lg sm:text-xl font-black text-red-600 truncate" id="statPerdas">0,00 MT</span>
+            </div>
+        </div>
+
+        <!-- FILTRO DE MÊS -->
+        <div class="w-full bg-transparent border-b border-gray-200 pb-4 mt-2 flex items-center justify-between">
+            <span class="font-bold text-gray-700 text-sm">Período (Comissões)</span>
             <div class="relative w-40 sm:w-48">
                 <select id="monthFilter" onchange="processarEstatisticas()" class="bg-white border border-gray-200 text-gray-900 text-sm font-bold rounded-lg shadow-sm focus:ring-[#F7931A] focus:border-[#F7931A] block w-full px-4 py-2 pr-8 outline-none cursor-pointer appearance-none transition-colors">
                     <option value="current">Mês Atual</option>
@@ -65,7 +77,7 @@
             </div>
         </div>
 
-        <!-- TABELA HTML DE DETALHES -->
+        <!-- TABELA HTML DE DETALHES DE COMISSÕES -->
         <div class="w-full">
             <div class="flex justify-between items-center mb-4 px-1">
                 <h3 class="font-black text-gray-900 text-sm uppercase tracking-widest flex items-center gap-2">
@@ -79,7 +91,7 @@
                         <thead>
                             <tr class="bg-gray-50 border-b border-gray-200">
                                 <th class="py-3 px-4 text-[0.65rem] font-bold text-gray-500 uppercase tracking-widest">Data</th>
-                                <th class="py-3 px-4 text-[0.65rem] font-bold text-gray-500 uppercase tracking-widest">Membro (Origem)</th>
+                                <th class="py-3 px-4 text-[0.65rem] font-bold text-gray-500 uppercase tracking-widest">Membro / Origem</th>
                                 <th class="py-3 px-4 text-[0.65rem] font-bold text-gray-500 uppercase tracking-widest">Atividade</th>
                                 <th class="py-3 px-4 text-[0.65rem] font-bold text-gray-500 uppercase tracking-widest text-right">Comissão</th>
                             </tr>
@@ -106,7 +118,7 @@
         <div class="w-full mb-8">
             <div class="flex justify-between items-center mb-4 px-1">
                 <h3 class="font-black text-gray-900 text-sm uppercase tracking-widest flex items-center gap-2">
-                    <span class="material-icons text-bitcoin text-lg">insights</span> Desempenho (OTC vs Robôs)
+                    <span class="material-icons text-bitcoin text-lg">insights</span> Desempenho (Mercado Real vs Robôs)
                 </h3>
             </div>
             
@@ -115,7 +127,7 @@
                 <div class="flex items-center justify-center gap-6 mb-4">
                     <div class="flex items-center gap-2">
                         <div class="w-3 h-3 rounded-full bg-[#F7931A]"></div>
-                        <span class="text-xs font-bold text-gray-600">Mercado OTC</span>
+                        <span class="text-xs font-bold text-gray-600">Mercado Real</span>
                     </div>
                     <div class="flex items-center gap-2">
                         <div class="w-3 h-3 rounded-full bg-[#00c853]"></div>
@@ -140,7 +152,7 @@
             <img src="assets/images/icon-home.png" class="h-5 w-5 object-contain"> Início
         </a>
         <a href="mercado.html" class="flex items-center gap-3 px-6 py-4 text-gray-500 hover:bg-gray-50 hover:text-gray-900 font-medium transition-colors">
-            <span class="iconify text-xl" data-icon="cryptocurrency-color:btc"></span> Mercado OTC
+            <span class="iconify text-xl" data-icon="cryptocurrency-color:btc"></span> Mercado Real
         </a>
         <a href="auto.html" class="flex items-center gap-3 px-6 py-4 text-gray-500 hover:bg-gray-50 hover:text-gray-900 font-medium transition-colors">
             <img src="assets/images/icon-auto.png" class="h-5 w-5 object-contain"> Robôs Auto
@@ -162,7 +174,6 @@
         
         let todasComissoes = [];
         let comissoesAtuais = [];
-        let meusIndicados = []; // Nova Variável para armazenar a rede real do usuário
         
         const formatMT = (value) => Number(value).toLocaleString('pt-MZ', { minimumFractionDigits: 2 }) + ' MT';
 
@@ -170,7 +181,6 @@
             if (!token) { window.location.href = 'index.html'; return; }
             await carregarDadosBackend();
             
-            // Redesenha o gráfico D3 se a janela mudar de tamanho
             window.addEventListener('resize', () => {
                 if(comissoesAtuais.length > 0) renderizarGraficoD3(comissoesAtuais);
             });
@@ -199,16 +209,38 @@
 
         async function carregarDadosBackend() {
             try {
-                const resHist = await fetch(`${API_URL}/user/history`, { headers: { 'Authorization': `Bearer ${token}` } });
-                const dataHist = await resHist.json();
+                // Carrega Histórico Geral e Histórico de Mercado (Trades do Próprio Usuário)
+                const [resHist, resTrades] = await Promise.all([
+                    fetch(`${API_URL}/user/history`, { headers: { 'Authorization': `Bearer ${token}` } }),
+                    fetch(`${API_URL}/user/trades`, { headers: { 'Authorization': `Bearer ${token}` } })
+                ]);
                 
-                if (resHist.ok && dataHist.transactions) {
-                    todasComissoes = dataHist.transactions.filter(t => t.type === 'referral_bonus' && t.status === 'completed');
-                    meusIndicados = dataHist.referrals || []; // Guarda a lista real de usuários
-                    processarEstatisticas();
+                if (resTrades.ok) {
+                    const dataTrades = await resTrades.json();
+                    let totalGanhos = 0;
+                    let totalPerdas = 0;
+                    if (Array.isArray(dataTrades)) {
+                        dataTrades.forEach(tr => {
+                            if (tr.status === 'won') totalGanhos += tr.profit;
+                            if (tr.status === 'lost') totalPerdas += tr.amount;
+                        });
+                    }
+                    document.getElementById('statGanhos').textContent = formatMT(totalGanhos);
+                    document.getElementById('statPerdas').textContent = formatMT(totalPerdas);
+                }
+
+                if (resHist.ok) {
+                    const dataHist = await resHist.json();
+                    if (dataHist.transactions) {
+                        todasComissoes = dataHist.transactions.filter(t => t.type === 'referral_bonus' && t.status === 'completed');
+                        processarEstatisticas();
+                    } else {
+                        mostrarVazio();
+                    }
                 } else {
                     mostrarVazio();
                 }
+
             } catch (err) {
                 exibirToast('Erro de conexão ao servidor.', 'error');
                 mostrarVazio('Falha ao carregar as estatísticas.');
@@ -230,27 +262,15 @@
               .text("Sem dados suficientes para exibir o gráfico.");
         }
 
-        // Função determinística que utiliza os indicados REAIS da base de dados
-        function getMetadados(txId) {
-            let hash = 0;
-            const str = String(txId || Math.random());
-            for (let i = 0; i < str.length; i++) {
-                hash = str.charCodeAt(i) + ((hash << 5) - hash);
-            }
+        // Função que lê os dados REAIS da Base de Dados daquela transação
+        function getMetadados(tx) {
+            const origin = tx.originType || 'Comissão de Equipa';
+            const isTrade = origin.includes('Mercado');
+            const typeStr = origin;
+            const typeColor = isTrade ? 'text-[#F7931A]' : 'text-[#00c853]';
+            const name = tx.accountName || 'Membro da Equipa';
             
-            // 60% chance OTC, 40% chance BOT (Para ilustrar o tipo de operação que gerou a comissão)
-            const isOtc = Math.abs(hash) % 10 < 6; 
-            const typeStr = isOtc ? 'Trade no Mercado OTC' : 'Aquisição de Máquina';
-            const typeColor = isOtc ? 'text-[#F7931A]' : 'text-[#00c853]';
-            
-            // Busca o nome real do usuário na lista de indicados
-            let name = 'Membro da Equipa';
-            if (meusIndicados && meusIndicados.length > 0) {
-                const index = Math.abs(hash) % meusIndicados.length;
-                name = meusIndicados[index].name;
-            }
-            
-            return { isOtc, typeStr, typeColor, name };
+            return { isTrade, typeStr, typeColor, name };
         }
 
         function processarEstatisticas() {
@@ -278,7 +298,6 @@
                 }
             });
 
-            // Ordena as mais recentes primeiro para a tabela
             comissoesFiltradas.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
             comissoesAtuais = comissoesFiltradas;
 
@@ -305,7 +324,7 @@
                 const hora = String(dataTx.getHours()).padStart(2, '0');
                 const min = String(dataTx.getMinutes()).padStart(2, '0');
                 
-                const meta = getMetadados(tx._id);
+                const meta = getMetadados(tx);
                 totalGeral += tx.amount;
 
                 htmlTabela += `
@@ -321,7 +340,7 @@
                             ${meta.name}
                         </div>
                     </td>
-                    <td class="py-3 px-4 text-xs font-bold ${meta.typeColor} whitespace-nowrap">
+                    <td class="py-3 px-4 text-[0.65rem] font-bold ${meta.typeColor} whitespace-nowrap uppercase tracking-widest">
                         ${meta.typeStr}
                     </td>
                     <td class="py-3 px-4 text-sm font-black text-[#00c853] text-right whitespace-nowrap">
@@ -339,33 +358,31 @@
             const container = d3.select("#d3ChartContainer");
             container.selectAll("*").remove(); 
 
-            // 1. Agrupa os dados por dia (YYYY-MM-DD)
             const agrupado = {};
             transacoes.forEach(tx => {
                 const d = new Date(tx.createdAt);
                 const dataString = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
                 
                 if (!agrupado[dataString]) {
-                    agrupado[dataString] = { date: new Date(d.setHours(0,0,0,0)), otc: 0, bot: 0 };
+                    agrupado[dataString] = { date: new Date(d.setHours(0,0,0,0)), market: 0, bot: 0 };
                 }
 
-                const meta = getMetadados(tx._id);
-                if (meta.isOtc) agrupado[dataString].otc += tx.amount;
+                const meta = getMetadados(tx);
+                if (meta.isTrade) agrupado[dataString].market += tx.amount;
                 else agrupado[dataString].bot += tx.amount;
             });
 
             let baseData = Object.values(agrupado).sort((a, b) => a.date - b.date);
 
-            // 2. Preenchimento de Datas (Date Padding) para evitar que o D3 não desenhe as linhas
             let dados = [];
             if (baseData.length > 0) {
                 const minDate = baseData[0].date;
                 const maxDate = baseData[baseData.length - 1].date;
 
                 if (minDate.getTime() === maxDate.getTime()) {
-                    dados.push({ date: new Date(minDate.getTime() - 86400000), otc: 0, bot: 0 });
+                    dados.push({ date: new Date(minDate.getTime() - 86400000), market: 0, bot: 0 });
                     dados.push(baseData[0]);
-                    dados.push({ date: new Date(minDate.getTime() + 86400000), otc: 0, bot: 0 });
+                    dados.push({ date: new Date(minDate.getTime() + 86400000), market: 0, bot: 0 });
                 } else {
                     let curr = new Date(minDate.getTime());
                     while (curr <= maxDate) {
@@ -373,14 +390,13 @@
                         if (agrupado[dataString]) {
                             dados.push(agrupado[dataString]);
                         } else {
-                            dados.push({ date: new Date(curr.getTime()), otc: 0, bot: 0 });
+                            dados.push({ date: new Date(curr.getTime()), market: 0, bot: 0 });
                         }
                         curr.setDate(curr.getDate() + 1);
                     }
                 }
             }
 
-            // Dimensões dinâmicas
             const rect = container.node().getBoundingClientRect();
             const margin = { top: 20, right: 20, bottom: 30, left: 45 };
             const width = rect.width - margin.left - margin.right;
@@ -398,7 +414,7 @@
                 .domain(xExtent)
                 .range([0, width]);
 
-            const maxVal = d3.max(dados, d => Math.max(d.otc, d.bot));
+            const maxVal = d3.max(dados, d => Math.max(d.market, d.bot));
             const y = d3.scaleLinear()
                 .domain([0, (maxVal * 1.15) || 10]) 
                 .range([height, 0]);
@@ -427,10 +443,10 @@
                 .call(g => g.selectAll(".tick line").attr("stroke", "#f1f5f9"))
                 .call(g => g.selectAll(".tick text").attr("fill", "#94a3b8").style("font-weight", "bold").style("font-size", "10px"));
 
-            const lineOtc = d3.line().x(d => x(d.date)).y(d => y(d.otc)).curve(d3.curveMonotoneX); 
+            const lineMarket = d3.line().x(d => x(d.date)).y(d => y(d.market)).curve(d3.curveMonotoneX); 
             const lineBot = d3.line().x(d => x(d.date)).y(d => y(d.bot)).curve(d3.curveMonotoneX); 
 
-            svg.append("path").datum(dados).attr("fill", "none").attr("stroke", "#F7931A").attr("stroke-width", 3).attr("stroke-linecap", "round").attr("d", lineOtc);
+            svg.append("path").datum(dados).attr("fill", "none").attr("stroke", "#F7931A").attr("stroke-width", 3).attr("stroke-linecap", "round").attr("d", lineMarket);
             svg.append("path").datum(dados).attr("fill", "none").attr("stroke", "#00c853").attr("stroke-width", 3).attr("stroke-linecap", "round").attr("d", lineBot);
 
             const tooltip = d3.select("#chartTooltip");
@@ -464,8 +480,8 @@
                     });
             }
 
-            drawPoints('otc', '#F7931A', 'OTC');
-            drawPoints('bot', '#00c853', 'Robô');
+            drawPoints('market', '#F7931A', 'Mercado Real');
+            drawPoints('bot', '#00c853', 'Robô Auto');
         }
     </script>
 </body>
