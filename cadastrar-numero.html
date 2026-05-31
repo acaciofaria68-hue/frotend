@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="pt-MZ">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Cribot - Conta de Levantamento</title>
+    
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;900&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <script>
+        tailwind.config = {
+            theme: { extend: { colors: { bitcoin: '#F7931A' }, fontFamily: { inter: ['Inter', 'sans-serif'] } } }
+        }
+    </script>
+    <style>
+        body { font-family: 'Inter', sans-serif; background-color: #ffffff; -webkit-tap-highlight-color: transparent; }
+    </style>
+</head>
+<body class="min-h-screen flex flex-col pb-24 md:pb-8 bg-white relative">
+
+    <div id="toastPopup" class="fixed top-6 left-1/2 transform -translate-x-1/2 -translate-y-[200%] px-5 py-3 rounded-xl flex items-center gap-3 text-white font-medium transition-all duration-500 opacity-0 z-[9999] min-w-max border shadow-2xl pointer-events-none">
+        <span id="toastIcon" class="material-icons text-xl">info</span>
+        <span id="toastMsg" class="text-[0.85rem] font-bold">Notificação</span>
+    </div>
+
+    <!-- CABEÇALHO -->
+    <div class="pt-6 pb-4 px-4 relative z-10 flex flex-col items-center border-b border-gray-100 bg-white">
+        <div class="w-full max-w-lg flex justify-start items-center gap-3">
+            <button onclick="window.history.back()" class="text-gray-500 hover:text-gray-900 active:scale-95 transition-transform flex items-center justify-center bg-gray-50 h-10 w-10 rounded-xl border border-gray-200 shadow-sm">
+                <span class="material-icons text-lg">arrow_back</span>
+            </button>
+            <h1 class="text-xl font-black text-gray-900">Conta de Saque</h1>
+        </div>
+    </div>
+
+    <!-- FORMULÁRIO -->
+    <main class="flex-1 w-full max-w-lg mx-auto px-4 pt-6 flex flex-col relative z-10">
+        
+        <div class="flex items-center gap-4 mb-6 pb-4 border-b border-gray-100">
+            <img src="assets/images/icon-wallet.png" alt="Conta" class="h-14 w-14 object-contain drop-shadow-sm" onerror="this.src='data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA2NCA2NCIgd2lkdGg9IjY0IiBoZWlnaHQ9IjY0Ij4KICA8cmVjdCB4PSI4IiB5PSIxNiIgd2lkdGg9IjQ4IiBoZWlnaHQ9IjM2IiByeD0iOCIgZmlsbD0iI0Y3OTMxQSIgLz4KICA8cmVjdCB4PSI4IiB5PSIxNiIgd2lkdGg9IjQ4IiBoZWlnaHQ9IjEyIiBmaWxsPSIjRDgzMTAwIiBvcGFjaXR5PSIwLjgiIHJ4PSI4IiAvPgogIDxjaXJjbGUgY3g9IjQ0IiBjeT0iMzQiIHI9IjYiIGZpbGw9IiNGRkZGRkYiIC8+CiAgPGNpcmNsZSBjeD0iNDQiIGN5PSIzNCIgcj0iMyIgZmlsbD0iI0Y3OTMxQSIgLz4KPC9zdmc+'">
+            <div class="flex flex-col">
+                <span class="font-black text-gray-900 text-base leading-tight">Cadastrar Número M-Pesa / e-Mola</span>
+                <span class="text-[0.65rem] text-gray-500 font-bold uppercase tracking-widest mt-1">Obrigatório para levantamentos</span>
+            </div>
+        </div>
+
+        <div class="bg-blue-50 border-l-4 border-blue-500 p-3 flex items-start gap-3 mb-6 rounded-r-lg shadow-sm">
+            <span class="material-icons text-blue-500 text-sm mt-0.5">security</span>
+            <p class="text-[0.70rem] text-blue-800 font-medium leading-relaxed">Por razões de segurança, os seus levantamentos serão sempre enviados exclusivamente para a conta registada abaixo. A sua alteração requer o PIN do sistema.</p>
+        </div>
+
+        <form id="formContaSaque" class="flex flex-col gap-5">
+            
+            <div class="flex flex-col gap-1.5 w-full">
+                <label class="text-[0.70rem] font-bold text-gray-600 uppercase tracking-widest">Número de Telefone (Conta)</label>
+                <input type="tel" id="wdNumber" required placeholder="Aguarde..." class="w-full rounded-xl border border-gray-300 py-3.5 px-4 text-gray-900 font-black text-lg focus:border-gray-900 focus:ring-1 focus:ring-gray-900 outline-none transition-colors">
+            </div>
+
+            <div class="flex flex-col gap-1.5 w-full">
+                <label class="text-[0.70rem] font-bold text-gray-600 uppercase tracking-widest">Nome Completo do Titular</label>
+                <input type="text" id="wdName" required placeholder="Aguarde..." class="w-full rounded-xl border border-gray-300 py-3.5 px-4 text-gray-900 font-black focus:border-gray-900 focus:ring-1 focus:ring-gray-900 outline-none transition-colors">
+                <span class="text-[0.60rem] text-gray-400 font-bold">O nome deve corresponder perfeitamente ao registado na operadora.</span>
+            </div>
+
+            <div class="flex flex-col gap-1.5 w-full mt-2 pt-4 border-t border-gray-100">
+                <label class="text-[0.70rem] font-bold text-gray-600 uppercase tracking-widest text-center">Digite o seu PIN de Saque para confirmar</label>
+                <input type="password" id="confirmPin" required maxlength="4" placeholder="****" class="w-full rounded-xl border border-gray-300 py-3.5 px-4 text-center text-xl tracking-widest text-gray-900 font-black focus:border-[#00c853] focus:ring-1 focus:ring-[#00c853] outline-none transition-colors">
+            </div>
+
+            <button type="submit" id="btnSubmit" class="w-full bg-gray-900 hover:bg-black text-white font-black py-4 rounded-xl mt-4 active:scale-95 transition-transform flex justify-center items-center gap-2 shadow-md">
+                Salvar Conta de Recebimento <span class="material-icons text-lg">save</span>
+            </button>
+        </form>
+
+    </main>
+
+    <script>
+        const API_URL = 'https://twoou3.onrender.com/api';
+        let token = localStorage.getItem('token');
+
+        document.addEventListener("DOMContentLoaded", async () => {
+            if (!token) window.location.href = 'index.html';
+
+            try {
+                // Fetch REAL dos dados do utilizador do Backend
+                const res = await fetch(`${API_URL}/user/dashboard`, { headers: { 'Authorization': `Bearer ${token}` } });
+                const data = await res.json();
+                
+                if (res.ok && data.user) {
+                    document.getElementById('wdNumber').placeholder = "Ex: 840000000";
+                    document.getElementById('wdName').placeholder = "Ex: João da Silva";
+                    
+                    if(data.user.withdrawalNumber) document.getElementById('wdNumber').value = data.user.withdrawalNumber;
+                    if(data.user.withdrawalName) document.getElementById('wdName').value = data.user.withdrawalName;
+                }
+            } catch(e) {}
+        });
+
+        function exibirToast(texto, tipo = 'info') {
+            const caixa = document.getElementById('toastPopup');
+            const icon = document.getElementById('toastIcon');
+            const msg = document.getElementById('toastMsg');
+
+            caixa.classList.remove('bg-red-500', 'border-red-600', 'bg-gray-900', 'border-gray-800');
+            if (tipo === 'error') {
+                 caixa.classList.add('bg-red-500', 'border-red-600'); icon.textContent = "error_outline"; 
+            } else {
+                 caixa.classList.add('bg-gray-900', 'border-gray-800'); icon.textContent = "check_circle"; 
+            }
+            msg.textContent = texto;
+            caixa.style.transform = 'translate(-50%, 0)';
+            caixa.style.opacity = '1';
+
+            setTimeout(() => {
+                caixa.style.transform = 'translate(-50%, -200%)';
+                caixa.style.opacity = '0';
+            }, 3000); 
+        }
+
+        document.getElementById('formContaSaque').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const num = document.getElementById('wdNumber').value.trim();
+            const name = document.getElementById('wdName').value.trim();
+            const pin = document.getElementById('confirmPin').value;
+            const btn = document.getElementById('btnSubmit');
+
+            if (pin.length !== 4) return exibirToast('O PIN deve conter 4 dígitos.', 'error');
+
+            btn.disabled = true; btn.innerHTML = 'Processando...';
+
+            try {
+                const res = await fetch(`${API_URL}/user/withdrawal-account`, {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+                    body: JSON.stringify({ number: num, name: name, pin: pin })
+                });
+                
+                const data = await res.json();
+                
+                if (res.ok) {
+                    // Guarda o PIN na memória local APENAS para funcionar com a Biometria Rápida no futuro
+                    localStorage.setItem('userWithdrawalPin', pin); 
+                    
+                    exibirToast(data.message || 'Conta cadastrada e validada!', 'success');
+                    setTimeout(() => window.history.back(), 1500);
+                } else {
+                    exibirToast(data.error || 'Erro ao validar dados.', 'error');
+                    btn.disabled = false; btn.innerHTML = `Salvar Conta de Recebimento <span class="material-icons text-lg">save</span>`;
+                }
+            } catch(e) {
+                exibirToast('Sem ligação ao servidor.', 'error');
+                btn.disabled = false; btn.innerHTML = `Salvar Conta de Recebimento <span class="material-icons text-lg">save</span>`;
+            }
+        });
+    </script>
+</body>
+</html>

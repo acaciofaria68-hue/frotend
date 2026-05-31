@@ -1,0 +1,324 @@
+<!DOCTYPE html>
+<html lang="pt-MZ">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Cribot - Histórico Geral</title>
+    
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;900&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons+Outlined" rel="stylesheet">
+
+    <script src="https://code.iconify.design/3/3.1.0/iconify.min.js"></script>
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <script>
+        tailwind.config = {
+            theme: { extend: { colors: { bitcoin: '#F7931A' }, fontFamily: { inter: ['Inter', 'sans-serif'] } } }
+        }
+    </script>
+
+    <style>
+        body { font-family: 'Inter', sans-serif; background-color: #ffffff; -webkit-tap-highlight-color: transparent; }
+        .no-scrollbar::-webkit-scrollbar { display: none; }
+        .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+    </style>
+</head>
+
+<body class="min-h-screen flex flex-col pb-24 md:pb-8 bg-white relative">
+
+    <div id="toastPopup" class="fixed top-6 left-1/2 transform -translate-x-1/2 -translate-y-[200%] px-5 py-3.5 rounded-[1rem] flex items-center gap-3 text-white font-medium transition-all duration-500 opacity-0 z-[9999] min-w-max border shadow-2xl pointer-events-none">
+        <span id="toastIcon" class="material-icons text-xl">info</span>
+        <span id="toastMsg" class="text-[0.85rem] font-bold">Notificação</span>
+    </div>
+
+    <!-- CABEÇALHO COM Z-INDEX ALTO PARA EVITAR MISTURA COM O CONTEÚDO -->
+    <div class="pt-6 pb-4 relative z-[60] flex flex-col border-b border-gray-100 bg-white sticky top-0 md:ml-64 shadow-sm">
+        <div class="w-full max-w-4xl mx-auto flex justify-start items-center gap-3 px-5">
+            <button onclick="window.history.back()" class="text-gray-500 hover:text-gray-900 active:scale-95 transition-transform flex items-center justify-center bg-gray-50 h-10 w-10 rounded-xl border border-gray-200 shadow-sm">
+                <span class="material-icons text-lg">arrow_back</span>
+            </button>
+            <div class="flex flex-col">
+                <h1 class="text-xl font-black text-gray-900 leading-tight">Histórico Geral</h1>
+                <span class="text-[0.65rem] font-bold text-gray-400 uppercase tracking-widest">Extrato de todas as movimentações</span>
+            </div>
+        </div>
+
+        <!-- FILTROS (SCROLL HORIZONTAL) -->
+        <div class="flex gap-2 overflow-x-auto no-scrollbar pt-5 pb-1 px-5 w-full max-w-4xl mx-auto mt-1">
+            <button onclick="aplicarFiltro('tudo')" id="btn-tudo" class="filter-btn px-4 py-2 rounded-full font-bold text-[0.75rem] whitespace-nowrap transition-colors shadow-sm bg-gray-900 text-white">Todas</button>
+            <button onclick="aplicarFiltro('operacoes')" id="btn-operacoes" class="filter-btn px-4 py-2 rounded-full font-bold text-[0.75rem] whitespace-nowrap transition-colors border border-gray-200 bg-gray-50 text-gray-500">Operações</button>
+            <button onclick="aplicarFiltro('comissoes')" id="btn-comissoes" class="filter-btn px-4 py-2 rounded-full font-bold text-[0.75rem] whitespace-nowrap transition-colors border border-gray-200 bg-gray-50 text-gray-500">Comissões</button>
+            <button onclick="aplicarFiltro('robos')" id="btn-robos" class="filter-btn px-4 py-2 rounded-full font-bold text-[0.75rem] whitespace-nowrap transition-colors border border-gray-200 bg-gray-50 text-gray-500">Robôs Auto</button>
+            <button onclick="aplicarFiltro('caixa')" id="btn-caixa" class="filter-btn px-4 py-2 rounded-full font-bold text-[0.75rem] whitespace-nowrap transition-colors border border-gray-200 bg-gray-50 text-gray-500">Caixa</button>
+        </div>
+    </div>
+
+    <!-- LISTA DE HISTÓRICO -->
+    <main class="flex-1 w-full max-w-4xl mx-auto px-4 mt-4 flex flex-col relative z-10 md:ml-64 md:max-w-[calc(100%-16rem)]">
+        
+        <div id="historicoContainer" class="flex flex-col pb-4">
+            <div class="flex flex-col items-center justify-center py-16 text-gray-400">
+                <svg class="animate-spin h-10 w-10 text-bitcoin mb-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z"></path></svg>
+                <span class="text-sm font-bold tracking-widest uppercase">Carregando dados...</span>
+            </div>
+        </div>
+
+    </main>
+
+    <!-- MENU INFERIOR MOBILE -->
+    <nav class="md:hidden fixed bottom-0 left-0 w-full bg-white border-t border-gray-100 z-50 pb-safe shadow-[0_-4px_10px_rgba(0,0,0,0.03)]">
+        <div class="flex justify-between items-center h-16 px-4 sm:px-6">
+            <a href="dashboard.html" class="flex flex-col items-center justify-center text-gray-400 hover:text-gray-900 w-14 transition-colors">
+                <img src="assets/images/icon-home.png" alt="Início" class="h-6 w-6 object-contain mb-1">
+                <span class="text-[0.65rem] font-medium">Início</span>
+            </a>
+            <a href="mercado.html" class="flex flex-col items-center justify-center text-gray-400 hover:text-gray-900 w-14 transition-colors">
+                <span class="iconify text-[1.40rem] mb-1" data-icon="cryptocurrency-color:btc"></span>
+                <span class="text-[0.65rem] font-medium">Mercado</span>
+            </a>
+            <a href="auto.html" class="flex flex-col items-center justify-center text-gray-400 hover:text-gray-900 w-14 transition-colors">
+                <img src="assets/images/icon-auto.png" alt="Auto" class="h-6 w-6 object-contain mb-1">
+                <span class="text-[0.65rem] font-medium">Auto</span>
+            </a>
+            <a href="equipa.html" class="flex flex-col items-center justify-center text-gray-400 hover:text-gray-900 w-14 transition-colors">
+                <img src="assets/images/icon-team.png" alt="Equipa" class="h-6 w-6 object-contain mb-1">
+                <span class="text-[0.65rem] font-medium">Equipa</span>
+            </a>
+            <a href="perfil.html" class="flex flex-col items-center justify-center text-gray-400 hover:text-gray-900 w-14 transition-colors">
+                <img src="assets/images/icon-profile.png" alt="Perfil" class="h-6 w-6 object-contain mb-1">
+                <span class="text-[0.65rem] font-medium">Perfil</span>
+            </a>
+        </div>
+    </nav>
+
+    <!-- MENU LATERAL DESKTOP -->
+    <aside class="hidden md:flex flex-col fixed top-0 left-0 w-64 h-screen bg-white border-r border-gray-100 z-50 pt-8 shadow-sm">
+        <div class="px-6 mb-8 flex items-center gap-3">
+            <img src="assets/images/logo.png" alt="Logo" class="h-10 object-contain">
+            <span class="font-bold text-xl text-gray-900">Cribot</span>
+        </div>
+        
+        <a href="dashboard.html" class="flex items-center gap-3 px-6 py-4 text-gray-500 hover:bg-gray-50 hover:text-gray-900 font-medium transition-colors">
+            <img src="assets/images/icon-home.png" class="h-5 w-5 object-contain"> Início
+        </a>
+        <a href="mercado.html" class="flex items-center gap-3 px-6 py-4 text-gray-500 hover:bg-gray-50 hover:text-gray-900 font-medium transition-colors">
+            <span class="iconify text-xl" data-icon="cryptocurrency-color:btc"></span> Mercado Real
+        </a>
+        <a href="auto.html" class="flex items-center gap-3 px-6 py-4 text-gray-500 hover:bg-gray-50 hover:text-gray-900 font-medium transition-colors">
+            <img src="assets/images/icon-auto.png" class="h-5 w-5 object-contain"> Robôs Auto
+        </a>
+        <a href="equipa.html" class="flex items-center gap-3 px-6 py-4 text-gray-500 hover:bg-gray-50 hover:text-gray-900 font-medium transition-colors">
+            <img src="assets/images/icon-team.png" class="h-5 w-5 object-contain"> Minha Equipa
+        </a>
+        <a href="perfil.html" class="flex items-center gap-3 px-6 py-4 text-gray-500 hover:bg-gray-50 hover:text-gray-900 font-medium transition-colors">
+            <img src="assets/images/icon-profile.png" class="h-5 w-5 object-contain"> Meu Perfil
+        </a>
+    </aside>
+
+    <script>
+        const API_URL = 'https://twoou3.onrender.com/api';
+        let token = localStorage.getItem('token');
+        const formatMT = (value) => Number(value).toLocaleString('pt-MZ', { minimumFractionDigits: 2 }) + ' MT';
+        
+        let allHistoryData = [];
+
+        document.addEventListener("DOMContentLoaded", async () => {
+            if (!token) { window.location.href = 'index.html'; return; }
+            await carregarTodoHistorico();
+        });
+
+        function exibirToast(texto, tipo = 'info') {
+            const caixa = document.getElementById('toastPopup');
+            const icon = document.getElementById('toastIcon');
+            const msg = document.getElementById('toastMsg');
+
+            caixa.classList.remove('bg-red-500', 'border-red-600', 'bg-gray-900', 'border-gray-800');
+            if (tipo === 'error') {
+                 caixa.classList.add('bg-red-500', 'border-red-600'); icon.textContent = "error_outline"; 
+            } else {
+                 caixa.classList.add('bg-gray-900', 'border-gray-800'); icon.textContent = "check_circle"; 
+            }
+            msg.textContent = texto;
+            caixa.style.transform = 'translate(-50%, 0)';
+            caixa.style.opacity = '1';
+
+            setTimeout(() => {
+                caixa.style.transform = 'translate(-50%, -200%)';
+                caixa.style.opacity = '0';
+            }, 3000); 
+        }
+
+        async function carregarTodoHistorico() {
+            try {
+                const [resHist, resTrades] = await Promise.all([
+                    fetch(`${API_URL}/user/history`, { headers: { 'Authorization': `Bearer ${token}` } }),
+                    fetch(`${API_URL}/user/trades`, { headers: { 'Authorization': `Bearer ${token}` } })
+                ]);
+
+                if(resHist.status === 401 || resTrades.status === 401) {
+                    localStorage.removeItem('token');
+                    window.location.href = 'index.html';
+                    return;
+                }
+
+                const dataHist = await resHist.json();
+                const dataTrades = await resTrades.json();
+                
+                processarDados(dataHist.transactions || [], dataTrades || []);
+
+            } catch (err) {
+                document.getElementById('historicoContainer').innerHTML = `
+                    <div class="flex flex-col items-center justify-center py-10 text-red-500">
+                        <span class="material-icons text-4xl mb-2">error_outline</span>
+                        <span class="text-sm font-bold">Falha de conexão. Tente recarregar a página.</span>
+                    </div>`;
+            }
+        }
+
+        function processarDados(transactions, trades) {
+            allHistoryData = [];
+
+            // 1. Processa Transações Comuns
+            transactions.forEach(tx => {
+                if(tx.type === 'otc_trade') return; // Ignora o registro genérico, pois a tabela 'trades' é mais detalhada.
+                
+                let isPos = false;
+                let title = tx.type;
+                let icon = 'sync';
+                let color = 'text-gray-500';
+                let bg = 'bg-gray-100';
+                let filterCat = 'outros';
+
+                if (tx.type === 'deposit') { 
+                    isPos = true; title = 'Depósito M-Pesa/e-Mola'; icon = 'south_west'; color = 'text-[#00c853]'; bg = 'bg-green-100'; filterCat = 'caixa'; 
+                }
+                else if (tx.type === 'withdrawal') { 
+                    isPos = false; title = 'Levantamento'; icon = 'north_east'; color = 'text-gray-900'; bg = 'bg-gray-200'; filterCat = 'caixa'; 
+                }
+                else if (tx.type === 'referral_bonus') { 
+                    isPos = true; title = 'Comissão de Equipa'; icon = 'people'; color = 'text-[#00c853]'; bg = 'bg-green-100'; filterCat = 'comissoes'; 
+                }
+                else if (tx.type === 'bot_purchase') { 
+                    isPos = false; title = 'Compra de Máquina IA'; icon = 'smart_toy'; color = 'text-[#FF5E00]'; bg = 'bg-orange-100'; filterCat = 'robos'; 
+                }
+                else if (tx.type === 'daily_profit') { 
+                    isPos = true; title = 'Lucro Automático (Bot)'; icon = 'auto_graph'; color = 'text-[#00c853]'; bg = 'bg-green-100'; filterCat = 'robos'; 
+                }
+
+                let statusText = 'Concluído';
+                if(tx.status === 'pending') statusText = 'Pendente';
+                if(tx.status === 'rejected') statusText = 'Rejeitado';
+
+                allHistoryData.push({
+                    id: tx._id,
+                    date: new Date(tx.createdAt),
+                    title: title,
+                    desc: statusText,
+                    amount: tx.amount,
+                    isPositive: isPos,
+                    status: tx.status, 
+                    icon: icon,
+                    color: color,
+                    bg: bg,
+                    category: filterCat
+                });
+            });
+
+            // 2. Processa Trades no Mercado
+            trades.forEach(tr => {
+                let isPos = tr.status === 'won';
+                
+                allHistoryData.push({
+                    id: tr._id,
+                    date: new Date(tr.createdAt),
+                    title: `Operação (${tr.pair})`,
+                    desc: isPos ? 'Vitória' : 'Perda',
+                    amount: isPos ? tr.profit : tr.amount,
+                    isPositive: isPos,
+                    status: 'completed',
+                    icon: isPos ? 'trending_up' : 'trending_down',
+                    color: isPos ? 'text-[#00c853]' : 'text-[#ff1744]',
+                    bg: isPos ? 'bg-green-100' : 'bg-red-100',
+                    category: 'operacoes'
+                });
+            });
+
+            allHistoryData.sort((a, b) => b.date - a.date);
+            aplicarFiltro('tudo'); 
+        }
+
+        function aplicarFiltro(categoria) {
+            document.querySelectorAll('.filter-btn').forEach(btn => {
+                btn.classList.remove('bg-gray-900', 'text-white', 'shadow-sm');
+                btn.classList.add('bg-gray-50', 'text-gray-500', 'border', 'border-gray-200');
+            });
+            const btnAtivo = document.getElementById(`btn-${categoria}`);
+            btnAtivo.classList.remove('bg-gray-50', 'text-gray-500', 'border', 'border-gray-200');
+            btnAtivo.classList.add('bg-gray-900', 'text-white', 'shadow-sm');
+
+            let filtrados = allHistoryData;
+            if (categoria !== 'tudo') {
+                filtrados = allHistoryData.filter(item => item.category === categoria);
+            }
+
+            renderizarLista(filtrados);
+        }
+
+        function renderizarLista(itens) {
+            const container = document.getElementById('historicoContainer');
+
+            if (itens.length === 0) {
+                container.innerHTML = `
+                <div class="flex flex-col items-center justify-center py-12 text-gray-400">
+                    <span class="material-icons-outlined text-6xl mb-3 opacity-50">receipt_long</span>
+                    <span class="text-sm font-bold tracking-widest uppercase">Nenhum registo encontrado.</span>
+                </div>`;
+                return;
+            }
+
+            container.innerHTML = itens.map(item => {
+                const dateStr = item.date.toLocaleString('pt-MZ', { day: '2-digit', month: 'short', hour: '2-digit', minute: '2-digit' });
+                
+                let valSign = item.isPositive ? '+' : '-';
+                let valColorClass = item.isPositive ? 'text-[#00c853]' : 'text-gray-900';
+                if (item.category === 'operacoes' && !item.isPositive) valColorClass = 'text-[#ff1744]'; 
+
+                let extraTag = '';
+                if(item.status === 'pending') {
+                    extraTag = `<span class="bg-yellow-100 text-yellow-700 px-1.5 rounded text-[0.55rem] uppercase">Pend</span>`;
+                    valColorClass = 'text-yellow-600';
+                }
+                if(item.status === 'rejected') {
+                    extraTag = `<span class="bg-red-100 text-red-700 px-1.5 rounded text-[0.55rem] uppercase">Rej</span>`;
+                    valColorClass = 'text-gray-400 line-through';
+                    valSign = '';
+                }
+
+                return `
+                <div class="flex items-center justify-between py-4 border-b border-gray-100 last:border-0 hover:bg-gray-50 px-2 transition-colors">
+                    <div class="flex items-center gap-4">
+                        <div class="w-11 h-11 rounded-xl ${item.bg} ${item.color} flex items-center justify-center shrink-0 shadow-sm border border-white/50">
+                            <span class="material-icons-outlined text-[1.4rem]">${item.icon}</span>
+                        </div>
+                        <div class="flex flex-col">
+                            <span class="font-black text-gray-900 text-[0.85rem]">${item.title}</span>
+                            <span class="text-[0.65rem] text-gray-500 font-bold tracking-wide mt-0.5 flex items-center gap-1">
+                                ${dateStr} • ${item.desc} ${extraTag}
+                            </span>
+                        </div>
+                    </div>
+                    <div class="flex flex-col items-end gap-1.5 shrink-0 pl-2">
+                        <span class="font-black ${valColorClass} text-[0.95rem] leading-none">
+                            ${valSign}${formatMT(item.amount)}
+                        </span>
+                    </div>
+                </div>
+                `;
+            }).join('');
+        }
+    </script>
+</body>
+</html>

@@ -35,19 +35,16 @@
 </head>
 <body class="min-h-screen flex flex-col items-center pt-6 pb-12 px-4 bg-white overflow-x-hidden relative font-inter">
 
-    <!-- IMAGEM -->
     <div class="w-full flex justify-center block">
-        <img src="https://i.ibb.co/V07K9jG2/Boneco-3-D-CRIBOT-com-Dinheiro.png" alt="Cribot App" class="h-56 sm:h-72 lg:h-80 object-contain align-bottom">
+        <img src="assets/images/logo.png" alt="Cribot App" class="h-56 sm:h-72 lg:h-80 object-contain align-bottom">
     </div>
 
-    <!-- CARROSSEL -->
     <div class="marquee-container mb-10 bg-bitcoin py-2 border-y border-orange-400">
         <div class="marquee-text text-white flex items-center">
             ACESSO &nbsp;&bull;&nbsp; LOGIN &nbsp;&bull;&nbsp; ACESSO &nbsp;&bull;&nbsp; LOGIN &nbsp;&bull;&nbsp; ACESSO &nbsp;&bull;&nbsp; LOGIN &nbsp;&bull;&nbsp; ACESSO &nbsp;&bull;&nbsp; LOGIN &nbsp;&bull;&nbsp; ACESSO &nbsp;&bull;&nbsp; LOGIN &nbsp;&bull;&nbsp; ACESSO &nbsp;&bull;&nbsp; LOGIN &nbsp;&bull;&nbsp;
         </div>
     </div>
 
-    <!-- FORMULÁRIO COMPLETO -->
     <div class="w-full max-w-xl bg-transparent relative">
 
         <div class="mb-10 w-full border-b border-gray-200 pb-5">
@@ -58,14 +55,12 @@
         <form id="loginForm" class="w-full flex flex-col">
             <div class="flex flex-col gap-y-8">
                 
-                <!-- EMAIL -->
                 <div class="relative w-full">
                     <label for="email" class="absolute -top-2.5 left-3 bg-white px-1 text-[0.75rem] font-medium text-gray-600 z-10 peer-focus:text-bitcoin">E-Mail de Acesso</label>
                     <input type="email" id="email" required placeholder="Ex: meuemail@gmail.com" 
                         class="peer block w-full rounded-md border border-gray-300 py-3.5 px-4 text-gray-900 placeholder:text-gray-400 focus:border-bitcoin focus:ring-1 focus:ring-bitcoin focus:outline-none transition-all bg-white">
                 </div>
 
-                <!-- SENHA -->
                 <div class="relative w-full">
                     <label for="password" class="absolute -top-2.5 left-3 bg-white px-1 text-[0.75rem] font-medium text-gray-600 z-10 peer-focus:text-bitcoin">Sua Senha Forte</label>
                     <input type="password" id="password" required placeholder="Sua senha de cadastro" 
@@ -86,14 +81,12 @@
         </form>
     </div>
 
-    <!-- TOAST -->
     <div id="toastPopup" class="fixed top-6 left-1/2 transform -translate-x-1/2 -translate-y-[200%] px-5 py-3 rounded-md flex items-center gap-3 text-white font-medium transition-all duration-300 opacity-0 z-50 min-w-max border">
         <span id="toastIcon" class="material-icons">info</span>
         <span id="toastMsg" class="text-sm">Notificação</span>
     </div>
 
     <script>
-        // Redireciona para o painel se já estiver logado
         if(localStorage.getItem('token')) {
             window.location.href = 'dashboard.html';
         }
@@ -122,10 +115,10 @@
                 if (res.ok) {
                     exibirToast('Acesso liberado! Redirecionando...', 'success');
                     
-                    // Salva o Token JWT no Navegador
                     localStorage.setItem('token', data.token);
-                    
-                    // Redireciona
+                    // Remove flag the modal bo as vindas para aparecer forçadamente no login normal
+                    sessionStorage.removeItem('welcomeModalShown');
+
                     setTimeout(() => window.location.href = 'dashboard.html', 1500); 
                 } else {
                     exibirToast(data.error || 'Credenciais inválidas.', 'error');

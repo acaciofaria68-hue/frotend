@@ -34,6 +34,21 @@
         <span id="toastMsg" class="text-[0.85rem] font-bold">Notificação</span>
     </div>
 
+    <!-- MODAL CONFIRMAÇÃO DE SAÍDA -->
+    <div id="modalConfirmLogout" class="fixed inset-0 z-[9999] bg-black/60 backdrop-blur-sm opacity-0 pointer-events-none transition-opacity duration-300 flex justify-center items-center px-4 md:items-center">
+        <div class="bg-white w-full max-w-sm mx-auto rounded-3xl p-6 shadow-2xl relative flex flex-col items-center text-center transform scale-95 transition-transform duration-300" id="modalConfirmLogoutContent">
+            <div class="mb-3 text-red-500">
+                <span class="material-icons" style="font-size: 3.5rem;">logout</span>
+            </div>
+            <h3 class="font-black text-gray-900 text-xl mb-2">Terminar Sessão</h3>
+            <p class="text-sm text-gray-500 font-medium mb-6">Tem certeza que deseja encerrar a sua sessão atual e sair?</p>
+            <div class="flex gap-3 w-full">
+                <button onclick="fecharModalLogout()" class="flex-1 bg-gray-100 hover:bg-gray-200 text-gray-600 font-bold py-3.5 rounded-xl active:scale-95 transition-all">Cancelar</button>
+                <button onclick="executarSaida()" class="flex-1 bg-red-500 hover:bg-red-600 text-white font-bold py-3.5 rounded-xl active:scale-95 transition-all shadow-md">Sim, Sair</button>
+            </div>
+        </div>
+    </div>
+
     <!-- CABEÇALHO -->
     <div class="bg-gradient-to-r from-gray-900 to-gray-800 pt-8 pb-24 px-5 md:ml-64 border-none rounded-b-[2.5rem] z-0 shadow-lg relative overflow-hidden">
         <div class="absolute -right-4 -top-4 w-32 h-32 bg-bitcoin/20 rounded-full blur-3xl"></div>
@@ -67,12 +82,26 @@
         <!-- LISTA DE CONFIGURAÇÕES -->
         <div class="mt-6 mx-5 bg-white rounded-[2rem] p-2 border border-gray-100 shadow-md flex flex-col z-10">
             
-            <span class="text-[0.65rem] font-bold text-gray-400 uppercase tracking-widest pl-4 pt-3 pb-1">Segurança</span>
+            <span class="text-[0.65rem] font-bold text-gray-400 uppercase tracking-widest pl-4 pt-3 pb-1">Financeiro e Segurança</span>
+
+            <!-- BOTÃO: CADASTRAR CONTA DE SAQUE COM IMAGEM LOCAL -->
+            <button onclick="window.location.href='cadastrar-numero.html'" class="w-full flex items-center justify-between p-3.5 hover:bg-gray-50 active:bg-gray-100 rounded-2xl transition-colors">
+                <div class="flex items-center gap-4">
+                    <div class="w-10 h-10 flex items-center justify-center shrink-0">
+                        <img src="assets/images/icon-wallet.png" alt="Carteira" class="h-9 w-9 object-contain drop-shadow-sm">
+                    </div>
+                    <div class="flex flex-col text-left">
+                        <span class="font-black text-gray-900 text-sm">Conta de Levantamento</span>
+                        <span class="text-[0.65rem] text-[#00c853] font-bold uppercase">Cadastrar / Visualizar</span>
+                    </div>
+                </div>
+                <span class="material-icons text-gray-300">chevron_right</span>
+            </button>
 
             <button onclick="window.location.href='alterar-pin.html'" class="w-full flex items-center justify-between p-3.5 hover:bg-gray-50 active:bg-gray-100 rounded-2xl transition-colors">
                 <div class="flex items-center gap-4">
                     <div class="w-10 h-10 flex items-center justify-center shrink-0">
-                        <img src="https://i.ibb.co/4wK8Z7qf/Adobe-Express-file-5.png" alt="PIN" class="h-9 w-9 object-contain drop-shadow-sm">
+                        <img src="assets/images/icon-pin.png" alt="PIN" class="h-9 w-9 object-contain drop-shadow-sm">
                     </div>
                     <div class="flex flex-col text-left">
                         <span class="font-black text-gray-900 text-sm">Código PIN de Saque</span>
@@ -85,7 +114,7 @@
             <button onclick="window.location.href='alterar-senha.html'" class="w-full flex items-center justify-between p-3.5 hover:bg-gray-50 active:bg-gray-100 rounded-2xl transition-colors">
                 <div class="flex items-center gap-4">
                     <div class="w-10 h-10 flex items-center justify-center shrink-0">
-                        <img src="https://i.ibb.co/Y7YfXDsM/1780046300149.png" alt="Senha" class="h-9 w-9 object-contain drop-shadow-sm">
+                        <img src="assets/images/icon-password.png" alt="Senha" class="h-9 w-9 object-contain drop-shadow-sm">
                     </div>
                     <div class="flex flex-col text-left">
                         <span class="font-black text-gray-900 text-sm">Senha de Acesso</span>
@@ -101,7 +130,7 @@
             <div class="w-full flex items-center justify-between p-3.5 rounded-2xl hover:bg-gray-50 transition-colors">
                 <div class="flex items-center gap-4">
                     <div class="w-10 h-10 flex items-center justify-center shrink-0">
-                        <img src="https://i.ibb.co/gZV98nDv/voice-3d-icon-png-download-6311426.png" alt="Som" class="h-9 w-9 object-contain drop-shadow-sm">
+                        <img src="assets/images/icon-sound.png" alt="Som" class="h-9 w-9 object-contain drop-shadow-sm">
                     </div>
                     <div class="flex flex-col text-left">
                         <span class="font-black text-gray-900 text-sm">Efeitos Sonoros</span>
@@ -117,7 +146,7 @@
             <button onclick="window.open('https://wa.me/258XXXXXXXXX', '_blank')" class="w-full flex items-center justify-between p-3.5 hover:bg-gray-50 active:bg-gray-100 rounded-2xl transition-colors">
                 <div class="flex items-center gap-4">
                     <div class="w-10 h-10 flex items-center justify-center shrink-0">
-                        <img src="https://i.ibb.co/dxH875q/Adobe-Express-file-6.png" alt="Suporte" class="h-9 w-9 object-contain drop-shadow-sm">
+                        <img src="assets/images/icon-support.png" alt="Suporte" class="h-9 w-9 object-contain drop-shadow-sm">
                     </div>
                     <div class="flex flex-col text-left">
                         <span class="font-black text-gray-900 text-sm">Atendimento Especializado</span>
@@ -127,11 +156,10 @@
                 <span class="material-icons text-gray-300">open_in_new</span>
             </button>
 
-            <!-- AQUI: Redirecionamento para a página de Termos e Condições -->
             <button onclick="window.location.href='termos.html'" class="w-full flex items-center justify-between p-3.5 hover:bg-gray-50 active:bg-gray-100 rounded-2xl transition-colors">
                 <div class="flex items-center gap-4">
                     <div class="w-10 h-10 flex items-center justify-center shrink-0">
-                        <img src="https://i.ibb.co/B2yCCM5j/terms-and-conditions-3d-icon-png-download-14620732.png" alt="Políticas" class="h-9 w-9 object-contain drop-shadow-sm">
+                        <img src="assets/images/icon-policy.png" alt="Políticas" class="h-9 w-9 object-contain drop-shadow-sm">
                     </div>
                     <div class="flex flex-col text-left">
                         <span class="font-black text-gray-900 text-sm">Políticas e Termos</span>
@@ -154,57 +182,49 @@
     <!-- MENU INFERIOR MOBILE -->
     <nav class="md:hidden fixed bottom-0 left-0 w-full bg-white border-t border-gray-100 z-30 pb-safe shadow-[0_-4px_10px_rgba(0,0,0,0.03)]">
         <div class="flex justify-between items-center h-16 px-4 sm:px-6">
-            
             <a href="dashboard.html" class="flex flex-col items-center justify-center text-gray-400 hover:text-gray-900 w-14 transition-colors">
-                <img src="https://i.ibb.co/HThdL6Zc/76505-removebg-preview.png" alt="Início" class="h-6 w-6 object-contain mb-1">
+                <img src="assets/images/icon-home.png" alt="Início" class="h-6 w-6 object-contain mb-1">
                 <span class="text-[0.65rem] font-medium">Início</span>
             </a>
-            
             <a href="mercado.html" class="flex flex-col items-center justify-center text-gray-400 hover:text-gray-900 w-14 transition-colors">
                 <span class="iconify text-[1.40rem] mb-1" data-icon="cryptocurrency-color:btc"></span>
                 <span class="text-[0.65rem] font-medium">Mercado</span>
             </a>
-            
             <a href="auto.html" class="flex flex-col items-center justify-center text-gray-400 hover:text-gray-900 w-14 transition-colors">
-                <img src="https://i.ibb.co/S4Z2THnC/77032-removebg-preview.png" alt="Auto" class="h-6 w-6 object-contain mb-1">
+                <img src="assets/images/icon-auto.png" alt="Auto" class="h-6 w-6 object-contain mb-1">
                 <span class="text-[0.65rem] font-medium">Auto</span>
             </a>
-
             <a href="equipa.html" class="flex flex-col items-center justify-center text-gray-400 hover:text-gray-900 w-14 transition-colors">
-                <img src="https://i.ibb.co/1fFPT3J0/teams-3d-icon-png-download-8894250.png" alt="Equipa" class="h-6 w-6 object-contain mb-1">
+                <img src="assets/images/icon-team.png" alt="Equipa" class="h-6 w-6 object-contain mb-1">
                 <span class="text-[0.65rem] font-medium">Equipa</span>
             </a>
-            
             <a href="perfil.html" class="flex flex-col items-center justify-center text-bitcoin w-14 transition-transform active:scale-95">
-                <img src="https://i.ibb.co/RTrC0N4B/1780052456588.png" alt="Perfil" class="h-6 w-6 object-contain mb-1">
+                <img src="assets/images/icon-profile.png" alt="Perfil" class="h-6 w-6 object-contain mb-1">
                 <span class="text-[0.65rem] font-bold">Perfil</span>
             </a>
-            
         </div>
     </nav>
 
     <!-- MENU LATERAL DESKTOP -->
     <aside class="hidden md:flex flex-col fixed top-0 left-0 w-64 h-screen bg-white border-r border-gray-100 z-30 pt-8 shadow-sm">
         <div class="px-6 mb-8 flex items-center gap-3">
-            <img src="https://i.ibb.co/V07K9jG2/Boneco-3-D-CRIBOT-com-Dinheiro.png" alt="Logo" class="h-10 object-contain">
+            <img src="assets/images/logo.png" alt="Logo" class="h-10 object-contain">
             <span class="font-bold text-xl text-gray-900">Cribot</span>
         </div>
-        
         <a href="dashboard.html" class="flex items-center gap-3 px-6 py-4 text-gray-500 hover:bg-gray-50 hover:text-gray-900 font-medium transition-colors">
-            <img src="https://i.ibb.co/HThdL6Zc/76505-removebg-preview.png" class="h-5 w-5 object-contain"> Início
+            <img src="assets/images/icon-home.png" class="h-5 w-5 object-contain"> Início
         </a>
         <a href="mercado.html" class="flex items-center gap-3 px-6 py-4 text-gray-500 hover:bg-gray-50 hover:text-gray-900 font-medium transition-colors">
             <span class="iconify text-xl" data-icon="cryptocurrency-color:btc"></span> Mercado OTC
         </a>
         <a href="auto.html" class="flex items-center gap-3 px-6 py-4 text-gray-500 hover:bg-gray-50 hover:text-gray-900 font-medium transition-colors">
-            <img src="https://i.ibb.co/S4Z2THnC/77032-removebg-preview.png" class="h-5 w-5 object-contain"> Robôs Auto
+            <img src="assets/images/icon-auto.png" class="h-5 w-5 object-contain"> Robôs Auto
         </a>
         <a href="equipa.html" class="flex items-center gap-3 px-6 py-4 text-gray-500 hover:bg-gray-50 hover:text-gray-900 font-medium transition-colors">
-            <img src="https://i.ibb.co/1fFPT3J0/teams-3d-icon-png-download-8894250.png" class="h-5 w-5 object-contain"> Minha Equipa
+            <img src="assets/images/icon-team.png" class="h-5 w-5 object-contain"> Minha Equipa
         </a>
-        
         <a href="perfil.html" class="flex items-center gap-3 px-6 py-4 text-bitcoin bg-orange-50 font-bold border-r-4 border-bitcoin">
-            <img src="https://i.ibb.co/RTrC0N4B/1780052456588.png" class="h-5 w-5 object-contain"> Meu Perfil
+            <img src="assets/images/icon-profile.png" class="h-5 w-5 object-contain"> Meu Perfil
         </a>
     </aside>
 
@@ -289,11 +309,28 @@
         }
 
         function confirmarSaida() {
-            const confirmacao = confirm("Tem certeza que deseja encerrar a sessão?");
-            if (confirmacao) {
-                localStorage.removeItem('token');
-                window.location.href = 'index.html';
-            }
+            const modal = document.getElementById('modalConfirmLogout');
+            const content = document.getElementById('modalConfirmLogoutContent');
+
+            modal.classList.remove('opacity-0', 'pointer-events-none');
+            modal.classList.add('opacity-100', 'pointer-events-auto');
+            content.classList.remove('scale-95');
+            content.classList.add('scale-100');
+        }
+
+        function fecharModalLogout() {
+            const modal = document.getElementById('modalConfirmLogout');
+            const content = document.getElementById('modalConfirmLogoutContent');
+
+            modal.classList.remove('opacity-100', 'pointer-events-auto');
+            modal.classList.add('opacity-0', 'pointer-events-none');
+            content.classList.remove('scale-100');
+            content.classList.add('scale-95');
+        }
+
+        function executarSaida() {
+            localStorage.removeItem('token');
+            window.location.href = 'index.html';
         }
     </script>
 </body>

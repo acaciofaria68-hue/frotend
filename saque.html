@@ -22,7 +22,7 @@
 </head>
 <body class="min-h-screen flex flex-col pb-24 md:pb-8 bg-white relative">
 
-    <div id="toastPopup" class="fixed top-6 left-1/2 transform -translate-x-1/2 -translate-y-[200%] px-5 py-3 rounded-sm flex items-center gap-3 text-white font-medium transition-all duration-500 opacity-0 z-[9999] min-w-max border shadow-2xl pointer-events-none">
+    <div id="toastPopup" class="fixed top-6 left-1/2 transform -translate-x-1/2 -translate-y-[200%] px-5 py-3 rounded-xl flex items-center gap-3 text-white font-medium transition-all duration-500 opacity-0 z-[99999] min-w-max border shadow-2xl pointer-events-none">
         <span id="toastIcon" class="material-icons text-xl">info</span>
         <span id="toastMsg" class="text-[0.85rem] font-bold">Notificação</span>
     </div>
@@ -30,40 +30,65 @@
     <!-- CABEÇALHO -->
     <div class="pt-6 pb-4 px-4 relative z-10 flex flex-col items-center border-b border-gray-100 bg-white">
         <div class="w-full max-w-lg flex justify-start items-center gap-3">
-            <button onclick="window.history.back()" class="text-gray-500 hover:text-gray-900 active:scale-95 transition-transform flex items-center justify-center bg-gray-50 h-10 w-10 rounded-sm border border-gray-200 shadow-sm">
+            <button onclick="window.history.back()" class="text-gray-500 hover:text-gray-900 active:scale-95 transition-transform flex items-center justify-center bg-gray-50 h-10 w-10 rounded-xl border border-gray-200 shadow-sm">
                 <span class="material-icons text-lg">arrow_back</span>
             </button>
             <h1 class="text-xl font-black text-gray-900">Novo Levantamento</h1>
         </div>
     </div>
 
-    <!-- FORMULÁRIO -->
-    <main class="flex-1 w-full max-w-lg mx-auto px-4 pt-6 flex flex-col relative z-10">
+    <!-- TELA DE BLOQUEIO (CASO NÃO TENHA CONTA CADASTRADA) -->
+    <div id="noAccountBlock" class="hidden flex-1 w-full max-w-lg mx-auto px-5 pt-12 flex-col items-center text-center">
+        <span class="material-icons text-gray-300 mb-4" style="font-size: 5rem;">account_balance_wallet</span>
+        <h2 class="text-xl font-black text-gray-900 mb-2">Conta Não Cadastrada</h2>
+        <p class="text-sm text-gray-500 font-medium mb-8">Para realizar levantamentos, você precisa de cadastrar a sua conta M-Pesa / e-Mola oficial no sistema primeiro.</p>
+        <button onclick="window.location.href='cadastrar-numero.html'" class="w-full bg-[#00c853] hover:bg-[#00e676] text-white font-black py-4 rounded-xl shadow-md active:scale-95 transition-transform flex items-center justify-center gap-2">
+            Cadastrar Conta Agora <span class="material-icons text-lg">arrow_forward</span>
+        </button>
+    </div>
+
+    <!-- FORMULÁRIO DE SAQUE -->
+    <main id="withdrawMain" class="hidden flex-1 w-full max-w-lg mx-auto px-4 pt-6 flex-col relative z-10">
         
         <div class="flex items-center gap-3 mb-6 pb-4 border-b border-gray-100" id="metodoHeader">
-            <!-- Ícone via JS -->
+            <span class="text-xs text-gray-400 font-bold">A carregar detalhes...</span>
         </div>
 
         <form id="formSaque" class="flex flex-col gap-4">
 
             <div class="flex flex-col gap-1.5 w-full">
                 <label class="text-[0.70rem] font-bold text-gray-600 uppercase tracking-widest">Valor a Levantar (MT)</label>
-                <input type="number" id="wdAmount" required min="100" placeholder="Ex: 500" class="w-full rounded-sm border border-gray-300 py-3 px-3 text-gray-900 font-black text-base focus:border-gray-900 focus:ring-1 focus:ring-gray-900 outline-none transition-colors">
+                <input type="number" id="wdAmount" required placeholder="A carregar limites..." class="w-full rounded-xl border border-gray-300 py-3.5 px-4 text-gray-900 font-black text-lg focus:border-gray-900 focus:ring-1 focus:ring-gray-900 outline-none transition-colors">
             </div>
 
-            <div class="flex flex-col gap-1.5 w-full">
-                <label class="text-[0.70rem] font-bold text-gray-600 uppercase tracking-widest" id="labelNumero">Seu Número</label>
-                <input type="tel" id="wdAddress" required placeholder="Número válido" class="w-full rounded-sm border border-gray-300 py-3 px-3 text-gray-900 font-black focus:border-gray-900 focus:ring-1 focus:ring-gray-900 outline-none transition-colors">
+            <div class="bg-gray-50 border border-gray-200 rounded-xl p-4 mt-2 mb-2 relative">
+                <div class="flex justify-between items-center mb-3">
+                    <span class="text-[0.70rem] font-bold text-gray-500 uppercase tracking-widest flex items-center gap-1"><span class="material-icons text-sm">lock</span> Conta Destino Validada</span>
+                    <a href="cadastrar-numero.html" class="text-[0.65rem] font-bold text-blue-600 hover:text-blue-800 underline uppercase tracking-widest">Alterar Config.</a>
+                </div>
+                
+                <div class="flex flex-col gap-3">
+                    <div class="flex flex-col">
+                        <label class="text-[0.60rem] font-bold text-gray-400 uppercase tracking-widest mb-0.5">Seu Número Oficial</label>
+                        <input type="tel" id="wdAddress" readonly class="w-full bg-transparent text-gray-900 font-black text-lg outline-none pointer-events-none">
+                    </div>
+                    
+                    <div class="flex flex-col">
+                        <label class="text-[0.60rem] font-bold text-gray-400 uppercase tracking-widest mb-0.5">Nome da Entidade</label>
+                        <input type="text" id="wdAccountName" readonly class="w-full bg-transparent text-gray-900 font-black outline-none pointer-events-none">
+                    </div>
+                </div>
             </div>
 
-            <div class="flex flex-col gap-1.5 w-full">
-                <label class="text-[0.70rem] font-bold text-gray-600 uppercase tracking-widest">PIN de Segurança</label>
-                <input type="password" id="wdPin" required maxlength="4" placeholder="****" class="w-full rounded-sm border border-gray-300 py-3 px-3 text-gray-900 font-black tracking-widest text-xl text-center focus:border-gray-900 focus:ring-1 focus:ring-gray-900 outline-none transition-colors">
+            <div class="flex flex-col gap-1.5 w-full mt-2">
+                <label class="text-[0.70rem] font-bold text-gray-600 uppercase tracking-widest text-center">PIN de Segurança (4 Dígitos)</label>
+                <input type="password" id="wdPin" required maxlength="4" placeholder="****" class="w-full rounded-xl border border-gray-300 py-3.5 px-4 text-gray-900 font-black tracking-widest text-xl text-center focus:border-gray-900 focus:ring-1 focus:ring-gray-900 outline-none transition-colors">
             </div>
 
-            <button type="submit" id="btnWd" class="w-full bg-gray-900 text-white font-black py-3 rounded-sm mt-4 active:scale-95 transition-transform flex justify-center items-center gap-2 shadow-sm hover:bg-black">
+            <button type="submit" id="btnWd" class="w-full bg-gray-900 text-white font-black py-4 rounded-xl mt-4 active:scale-95 transition-transform flex justify-center items-center gap-2 shadow-md hover:bg-black">
                 Solicitar Levantamento <span class="material-icons">arrow_forward</span>
             </button>
+            
         </form>
 
     </main>
@@ -72,34 +97,64 @@
         const API_URL = 'https://twoou3.onrender.com/api';
         let token = localStorage.getItem('token');
         
-        document.addEventListener("DOMContentLoaded", () => {
+        let minWd = 100;
+        let maxWd = 100000;
+
+        document.addEventListener("DOMContentLoaded", async () => {
             if (!token) { window.location.href = 'index.html'; return; }
             
+            // Requisita os dados REAIS da Base de Dados
+            try {
+                const dashRes = await fetch(`${API_URL}/user/dashboard`, { headers: { 'Authorization': `Bearer ${token}` } });
+                const dashData = await dashRes.json();
+                
+                if (dashRes.ok && dashData.user) {
+                    if (!dashData.user.withdrawalNumber || !dashData.user.withdrawalName) {
+                        document.getElementById('noAccountBlock').classList.remove('hidden');
+                        document.getElementById('noAccountBlock').classList.add('flex');
+                    } else {
+                        document.getElementById('withdrawMain').classList.remove('hidden');
+                        document.getElementById('withdrawMain').classList.add('flex');
+                        
+                        document.getElementById('wdAddress').value = dashData.user.withdrawalNumber;
+                        document.getElementById('wdAccountName').value = dashData.user.withdrawalName;
+                    }
+                }
+            } catch(e) {}
+
             const urlParams = new URLSearchParams(window.location.search);
             const metodo = urlParams.get('metodo');
-            
             const header = document.getElementById('metodoHeader');
-            const labelNumero = document.getElementById('labelNumero');
             
             if(metodo === 'emola') {
-                labelNumero.innerText = "Seu Número e-Mola";
                 header.innerHTML = `
-                    <img src="https://i.ibb.co/sJyN7pV8/unnamed.png" class="h-10 w-10 object-cover rounded-sm shadow-sm border border-gray-100">
+                    <img src="assets/images/logo-emola.png" class="h-12 w-12 object-cover rounded-xl shadow-sm border border-gray-100 shrink-0">
                     <div class="flex flex-col">
                         <span class="text-[0.65rem] font-bold text-gray-400 uppercase tracking-widest">Levantar para o e-Mola</span>
                         <span class="font-black text-gray-900 text-sm">Receba em poucos minutos</span>
                     </div>
                 `;
             } else {
-                labelNumero.innerText = "Seu Número M-Pesa";
                 header.innerHTML = `
-                    <img src="https://i.ibb.co/4w55BkYL/images.png" class="h-10 w-10 object-cover rounded-sm shadow-sm border border-gray-100">
+                    <img src="assets/images/logo-mpesa.png" class="h-12 w-12 object-cover rounded-xl shadow-sm border border-gray-100 shrink-0">
                     <div class="flex flex-col">
                         <span class="text-[0.65rem] font-bold text-gray-400 uppercase tracking-widest">Levantar para o M-Pesa</span>
                         <span class="font-black text-gray-900 text-sm">Receba em poucos minutos</span>
                     </div>
                 `;
             }
+
+            try {
+                const res = await fetch(`${API_URL}/user/settings`, { headers: { 'Authorization': `Bearer ${token}` } });
+                const data = await res.json();
+                if (res.ok) {
+                    minWd = data.minWithdraw || 100;
+                    maxWd = data.maxWithdraw || 100000;
+                    document.getElementById('wdAmount').placeholder = `Min: ${minWd} | Max: ${maxWd}`;
+                    document.getElementById('wdAmount').min = minWd;
+                    document.getElementById('wdAmount').max = maxWd;
+                }
+            } catch(e) {}
         });
 
         function exibirToast(texto, tipo = 'info') {
@@ -126,30 +181,34 @@
 
         document.getElementById('formSaque').addEventListener('submit', async (e) => {
             e.preventDefault();
-            const amount = document.getElementById('wdAmount').value;
-            const address = document.getElementById('wdAddress').value;
+            const amount = Number(document.getElementById('wdAmount').value);
             const pin = document.getElementById('wdPin').value;
+
+            if (amount < minWd) return exibirToast(`O levantamento mínimo é de ${minWd} MT.`, 'error');
+            if (amount > maxWd) return exibirToast(`O levantamento máximo é de ${maxWd} MT.`, 'error');
+
             const btn = document.getElementById('btnWd');
-            
             btn.disabled = true; btn.innerHTML = 'Processando...';
 
             try {
+                // Apenas envia o valor e o PIN, o Backend cuida de buscar a conta oficial
                 const res = await fetch(`${API_URL}/user/withdraw`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
-                    body: JSON.stringify({ amount, address, pin })
+                    body: JSON.stringify({ amount, pin })
                 });
                 const data = await res.json();
 
                 if (res.ok) {
-                    exibirToast(data.message, 'success');
+                    exibirToast(data.message || 'Saque Solicitado!', 'success');
                     setTimeout(() => window.location.href = 'carteira.html', 1500);
                 } else {
-                    exibirToast(data.error, 'error');
+                    exibirToast(data.error || 'Erro na transação.', 'error');
                     btn.disabled = false; btn.innerHTML = `Solicitar Levantamento <span class="material-icons">arrow_forward</span>`;
+                    document.getElementById('wdPin').value = ''; 
                 }
             } catch (err) { 
-                exibirToast('Erro de conexão.', 'error');
+                exibirToast('Erro de conexão com o servidor.', 'error');
                 btn.disabled = false; btn.innerHTML = `Solicitar Levantamento <span class="material-icons">arrow_forward</span>`; 
             }
         });

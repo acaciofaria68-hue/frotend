@@ -41,7 +41,7 @@
     <main class="flex-1 w-full max-w-lg mx-auto px-4 pt-6 flex flex-col relative z-10">
         
         <div class="flex items-center gap-4 mb-6 pb-4 border-b border-gray-100">
-            <img src="https://i.ibb.co/Y7YfXDsM/1780046300149.png" alt="Senha" class="h-12 w-12 object-contain drop-shadow-sm">
+            <img src="assets/images/icon-password.png" alt="Senha" class="h-12 w-12 object-contain drop-shadow-sm">
             <div class="flex flex-col">
                 <span class="font-black text-gray-900 text-base">Senha de Acesso</span>
                 <span class="text-[0.65rem] text-gray-500 font-bold uppercase tracking-widest mt-0.5">Mantenha sua conta segura</span>
@@ -115,8 +115,6 @@
             btn.disabled = true; btn.innerHTML = 'Processando...';
 
             try {
-                // OBS: Para esta funcionalidade ser 100% real, você precisará adicionar
-                // a rota PUT /api/user/change-password no backend (userRoutes.js).
                 const res = await fetch(`${API_URL}/user/change-password`, {
                     method: 'PUT',
                     headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },

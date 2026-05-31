@@ -27,18 +27,35 @@
 
 <body class="min-h-screen flex flex-col pb-24 md:pb-8 bg-gray-50 relative">
 
+    <!-- TOAST NOTIFICAÇÃO -->
     <div id="toastPopup" class="fixed top-6 left-1/2 transform -translate-x-1/2 -translate-y-[200%] px-5 py-3.5 rounded-[1rem] flex items-center gap-3 text-white font-medium transition-all duration-500 opacity-0 z-[9999] min-w-max border shadow-2xl pointer-events-none">
         <span id="toastIcon" class="material-icons text-xl">info</span>
         <span id="toastMsg" class="text-[0.85rem] font-bold">Notificação</span>
     </div>
 
+    <!-- MODAL CONFIRMAÇÃO DE COMPRA/UPGRADE -->
+    <div id="modalConfirmBot" class="fixed inset-0 z-[9999] bg-black/60 backdrop-blur-sm opacity-0 pointer-events-none transition-opacity duration-300 flex justify-center items-center px-4 md:items-center">
+        <div class="bg-white w-full max-w-sm mx-auto rounded-3xl p-6 shadow-2xl relative flex flex-col items-center text-center transform scale-95 transition-transform duration-300" id="modalConfirmBotContent">
+            <div class="mb-3 text-[#00c853]">
+                <span class="material-icons" style="font-size: 3.5rem;">smart_toy</span>
+            </div>
+            <h3 class="font-black text-gray-900 text-xl mb-2" id="botConfirmTitle">Confirmar Aquisição</h3>
+            <p class="text-sm text-gray-500 font-medium mb-6" id="botConfirmDesc">Deseja adquirir esta máquina?</p>
+            <div class="flex gap-3 w-full">
+                <button onclick="fecharModalBotConfirm()" class="flex-1 bg-gray-100 hover:bg-gray-200 text-gray-600 font-bold py-3.5 rounded-xl active:scale-95 transition-all">Cancelar</button>
+                <button onclick="executarCompraBot()" class="flex-1 bg-[#00c853] hover:bg-[#00e676] text-white font-bold py-3.5 rounded-xl active:scale-95 transition-all shadow-md">Confirmar</button>
+            </div>
+        </div>
+    </div>
+
     <div class="w-full md:ml-64 md:max-w-[calc(100%-16rem)] z-0 block">
         <!-- Banner topo -->
-        <img src="https://i.ibb.co/q3MbGR5V/1779983504560.png" alt="Banner Robôs Auto" class="w-full h-auto object-cover rounded-b-[1.5rem] shadow-sm" referrerpolicy="no-referrer">
+        <img src="assets/images/banner-auto.png" alt="Banner Robôs Auto" class="w-full h-auto object-cover rounded-b-[1.5rem] shadow-sm">
     </div>
 
     <main class="flex-1 w-full max-w-4xl mx-auto px-5 pt-6 flex flex-col gap-8 relative z-10 md:ml-64 md:max-w-[calc(100%-16rem)]">
         
+        <!-- MÁQUINAS ATIVAS -->
         <div>
             <div class="flex items-center mb-4">
                 <h3 class="text-lg font-black text-gray-900">Minhas Máquinas Ativas</h3>
@@ -50,11 +67,13 @@
             </div>
         </div>
 
+        <!-- LOJA DE ROBÔS -->
         <div class="mb-8" id="lojaSecao">
             <div class="flex justify-between items-end mb-4">
                 <h3 class="text-lg font-black text-gray-900">Loja de Robôs</h3>
             </div>
-            <div id="storeBotsContainer" class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div id="storeBotsContainer" class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <!-- Os robôs serão renderizados via JS aqui -->
             </div>
         </div>
 
@@ -64,7 +83,7 @@
     <nav class="md:hidden fixed bottom-0 left-0 w-full bg-white border-t border-gray-100 z-30 pb-safe shadow-[0_-4px_10px_rgba(0,0,0,0.03)]">
         <div class="flex justify-between items-center h-16 px-4 sm:px-6">
             <a href="dashboard.html" class="flex flex-col items-center justify-center text-gray-400 hover:text-gray-900 w-14 transition-colors">
-                <img src="https://i.ibb.co/HThdL6Zc/76505-removebg-preview.png" alt="Início" class="h-6 w-6 object-contain mb-1" referrerpolicy="no-referrer">
+                <img src="assets/images/icon-home.png" alt="Início" class="h-6 w-6 object-contain mb-1">
                 <span class="text-[0.65rem] font-medium">Início</span>
             </a>
             
@@ -74,17 +93,17 @@
             </a>
             
             <a href="auto.html" class="flex flex-col items-center justify-center text-bitcoin w-14 transition-transform active:scale-95">
-                <img src="https://i.ibb.co/S4Z2THnC/77032-removebg-preview.png" alt="Auto" class="h-6 w-6 object-contain mb-1" referrerpolicy="no-referrer">
+                <img src="assets/images/icon-auto.png" alt="Auto" class="h-6 w-6 object-contain mb-1">
                 <span class="text-[0.65rem] font-bold">Auto</span>
             </a>
 
             <a href="equipa.html" class="flex flex-col items-center justify-center text-gray-400 hover:text-gray-900 w-14 transition-colors">
-                <img src="https://i.ibb.co/1fFPT3J0/teams-3d-icon-png-download-8894250.png" alt="Equipa" class="h-6 w-6 object-contain mb-1" referrerpolicy="no-referrer">
+                <img src="assets/images/icon-team.png" alt="Equipa" class="h-6 w-6 object-contain mb-1">
                 <span class="text-[0.65rem] font-medium">Equipa</span>
             </a>
             
             <a href="perfil.html" class="flex flex-col items-center justify-center text-gray-400 hover:text-gray-900 w-14 transition-colors">
-                <img src="https://i.ibb.co/RTrC0N4B/1780052456588.png" alt="Perfil" class="h-6 w-6 object-contain mb-1" referrerpolicy="no-referrer">
+                <img src="assets/images/icon-profile.png" alt="Perfil" class="h-6 w-6 object-contain mb-1">
                 <span class="text-[0.65rem] font-medium">Perfil</span>
             </a>
         </div>
@@ -93,24 +112,24 @@
     <!-- MENU LATERAL DESKTOP -->
     <aside class="hidden md:flex flex-col fixed top-0 left-0 w-64 h-screen bg-white border-r border-gray-100 z-30 pt-8 shadow-sm">
         <div class="px-6 mb-8 flex items-center gap-3">
-            <img src="https://i.ibb.co/V07K9jG2/Boneco-3-D-CRIBOT-com-Dinheiro.png" alt="Logo" class="h-10 object-contain" referrerpolicy="no-referrer">
+            <img src="assets/images/logo.png" alt="Logo" class="h-10 object-contain">
             <span class="font-bold text-xl text-gray-900">Cribot</span>
         </div>
         
         <a href="dashboard.html" class="flex items-center gap-3 px-6 py-4 text-gray-500 hover:bg-gray-50 hover:text-gray-900 font-medium transition-colors">
-            <img src="https://i.ibb.co/HThdL6Zc/76505-removebg-preview.png" class="h-5 w-5 object-contain" referrerpolicy="no-referrer"> Início
+            <img src="assets/images/icon-home.png" class="h-5 w-5 object-contain"> Início
         </a>
         <a href="mercado.html" class="flex items-center gap-3 px-6 py-4 text-gray-500 hover:bg-gray-50 hover:text-gray-900 font-medium transition-colors">
-            <span class="iconify text-xl" data-icon="cryptocurrency-color:btc"></span> Mercado BTC/USDT
+            <span class="iconify text-xl" data-icon="cryptocurrency-color:btc"></span> Mercado Real
         </a>
         <a href="auto.html" class="flex items-center gap-3 px-6 py-4 text-bitcoin bg-orange-50 font-bold border-r-4 border-bitcoin">
-            <img src="https://i.ibb.co/S4Z2THnC/77032-removebg-preview.png" class="h-5 w-5 object-contain" referrerpolicy="no-referrer"> Robôs Auto
+            <img src="assets/images/icon-auto.png" class="h-5 w-5 object-contain"> Robôs Auto
         </a>
         <a href="equipa.html" class="flex items-center gap-3 px-6 py-4 text-gray-500 hover:bg-gray-50 hover:text-gray-900 font-medium transition-colors">
-            <img src="https://i.ibb.co/1fFPT3J0/teams-3d-icon-png-download-8894250.png" class="h-5 w-5 object-contain" referrerpolicy="no-referrer"> Minha Equipa
+            <img src="assets/images/icon-team.png" class="h-5 w-5 object-contain"> Minha Equipa
         </a>
         <a href="perfil.html" class="flex items-center gap-3 px-6 py-4 text-gray-500 hover:bg-gray-50 hover:text-gray-900 font-medium transition-colors">
-            <img src="https://i.ibb.co/RTrC0N4B/1780052456588.png" class="h-5 w-5 object-contain" referrerpolicy="no-referrer"> Meu Perfil
+            <img src="assets/images/icon-profile.png" class="h-5 w-5 object-contain"> Meu Perfil
         </a>
     </aside>
 
@@ -118,6 +137,10 @@
         const API_URL = 'https://twoou3.onrender.com/api';
         let token = localStorage.getItem('token');
         const formatMT = (value) => Number(value).toLocaleString('pt-MZ', { minimumFractionDigits: 2 }) + ' MT';
+
+        let pendingBotId = null;
+        let pendingValorToPay = 0;
+        let pendingIsUpgrade = false;
 
         document.addEventListener("DOMContentLoaded", async () => {
             if (!token) { window.location.href = 'index.html'; return; }
@@ -206,7 +229,7 @@
                                 Comprar Agora
                             </button>
                         </div>
-                        <img src="https://i.ibb.co/JWnK4KfS/Adobe-Express-file.png" alt="Sem robô" class="absolute right-0 bottom-0 h-40 w-40 sm:h-48 sm:w-48 object-contain object-bottom transform translate-x-4 translate-y-4 z-0 drop-shadow-xl" referrerpolicy="no-referrer">
+                        <img src="assets/images/img-zero-bots.png" alt="Sem robô" class="absolute right-0 bottom-0 h-40 w-40 sm:h-48 sm:w-48 object-contain object-bottom transform translate-x-4 translate-y-4 z-0 drop-shadow-xl">
                     </div>
                 `;
                 return;
@@ -225,46 +248,51 @@
                 const lucroAguardando = inv.uncollectedProfit || 0;
 
                 return `
-                <div class="bg-gradient-to-r from-gray-900 to-gray-800 rounded-2xl p-5 shadow-lg border border-gray-700 relative overflow-hidden">
-                    <div class="absolute -right-4 -top-4 w-24 h-24 bg-bitcoin/20 rounded-full blur-2xl"></div>
+                <div class="bg-[#00c853] shadow-md rounded-2xl p-3 flex gap-3 transition-transform hover:shadow-lg relative overflow-hidden">
                     
-                    <div class="flex justify-between items-start mb-4 relative z-10">
-                        <div class="flex items-center gap-3">
-                            <img src="${bot.image || 'https://i.ibb.co/S4Z2THnC/77032-removebg-preview.png'}" class="h-10 w-10 object-cover rounded-full bg-white/10 p-1 border border-white/20" referrerpolicy="no-referrer">
-                            <div class="flex flex-col">
-                                <span class="font-black text-white text-base">${bot.name}</span>
-                                <span class="text-[0.65rem] text-bitcoin font-bold uppercase tracking-widest flex items-center gap-1">
-                                    <span class="animate-pulse w-1.5 h-1.5 rounded-full bg-[#00c853]"></span> Máquina Ativa
+                    <div class="absolute -right-10 -top-10 w-32 h-32 bg-white/10 rounded-full blur-2xl pointer-events-none"></div>
+
+                    <div class="w-[110px] sm:w-[130px] aspect-[4/5] bg-white/20 rounded-xl flex items-center justify-center shrink-0 border border-white/30 p-2 overflow-hidden relative z-10">
+                        <img src="${bot.image || 'assets/images/default-bot.png'}" class="w-full h-full object-contain drop-shadow-md" referrerpolicy="no-referrer">
+                    </div>
+                    
+                    <div class="flex flex-col justify-between w-full py-1 z-10">
+                        <div class="flex flex-col">
+                            <div class="flex justify-between items-start mb-2.5">
+                                <h3 class="font-black text-white text-[0.95rem] sm:text-base leading-tight pr-2">${bot.name}</h3>
+                                <span class="text-[0.55rem] text-[#00c853] bg-white px-1.5 py-0.5 rounded font-black uppercase tracking-widest flex items-center gap-1 shrink-0 shadow-sm">
+                                    <span class="animate-pulse w-1 h-1 sm:w-1.5 sm:h-1.5 rounded-full bg-[#00c853]"></span> Ativa
                                 </span>
                             </div>
-                        </div>
-                    </div>
+                            
+                            <div class="flex flex-col gap-1.5 w-full">
+                                <div class="flex items-center gap-2">
+                                    <div class="w-1.5 h-1.5 rounded-full bg-white shrink-0 shadow-sm"></div>
+                                    <span class="text-[0.65rem] text-white/90 font-bold uppercase tracking-wide">Já Transferido: <span class="text-white font-black">+${formatMT(inv.accumulatedProfit || 0)}</span></span>
+                                </div>
+                                <div class="flex items-center gap-2">
+                                    <div class="w-1.5 h-1.5 rounded-full bg-white shrink-0 shadow-sm"></div>
+                                    <span class="text-[0.65rem] text-white/90 font-bold uppercase tracking-wide">Tempo Restante: <span class="text-white font-black">${diasRestantes} Dias</span></span>
+                                </div>
+                            </div>
 
-                    <div class="grid grid-cols-2 gap-4 mb-4 relative z-10">
-                        <div class="flex flex-col bg-white/5 rounded-xl p-3 border border-white/10">
-                            <span class="text-[0.60rem] text-gray-400 font-bold uppercase tracking-widest">Já Transferido</span>
-                            <span class="font-black text-[#00c853] text-lg">+${formatMT(inv.accumulatedProfit || 0)}</span>
+                            <div class="w-full bg-black/20 rounded-full h-1.5 mt-3 mb-1 relative z-10">
+                                <div class="bg-white h-1.5 rounded-full transition-all duration-1000 shadow-[0_0_8px_rgba(255,255,255,0.8)]" style="width: ${percentagem}%"></div>
+                            </div>
                         </div>
-                        <div class="flex flex-col bg-white/5 rounded-xl p-3 border border-white/10">
-                            <span class="text-[0.60rem] text-gray-400 font-bold uppercase tracking-widest">Tempo Restante</span>
-                            <span class="font-black text-white text-lg">${diasRestantes} Dias</span>
-                        </div>
-                    </div>
-
-                    <div class="w-full bg-gray-700 rounded-full h-1.5 mt-2 mb-4 relative z-10">
-                        <div class="bg-bitcoin h-1.5 rounded-full transition-all duration-1000" style="width: ${percentagem}%"></div>
-                    </div>
-
-                    <div class="mt-2 relative z-10">
+                        
+                        <div class="flex justify-end mt-2">
                         ${ lucroAguardando > 0 
-                           ? `<button onclick="coletarLucro('${inv._id}')" class="w-full bg-[#00c853] hover:bg-[#00e676] text-white font-black py-3.5 rounded-xl flex items-center justify-center gap-2 shadow-[0_0_15px_rgba(0,200,83,0.3)] active:scale-95 transition-all">
-                                Coletar Hoje: ${formatMT(lucroAguardando)} <span class="material-icons text-[1.1rem]">payments</span>
+                           ? `<button onclick="coletarLucro('${inv._id}')" class="bg-white hover:bg-gray-100 text-[#00c853] font-black py-2 px-4 rounded-xl flex items-center justify-center gap-1 shadow-md active:scale-95 transition-all text-xs sm:text-sm">
+                                Coletar: ${formatMT(lucroAguardando)} <span class="material-icons text-[1.1rem]">payments</span>
                               </button>`
-                           : `<button disabled class="w-full bg-gray-800 text-gray-400 font-bold py-3.5 rounded-xl flex items-center justify-center gap-2 border border-gray-700/50 cursor-not-allowed">
-                                Aguardando 00:00 (Maputo) <span class="material-icons text-sm opacity-50">schedule</span>
+                           : `<button disabled class="bg-white/20 text-white font-bold py-2 px-4 rounded-xl flex items-center justify-center gap-1.5 border border-white/30 cursor-not-allowed text-xs sm:text-sm">
+                                Em operação <span class="material-icons text-[1.1rem] animate-spin">settings</span>
                               </button>`
                         }
+                        </div>
                     </div>
+
                 </div>
                 `;
             }).join('');
@@ -284,76 +312,114 @@
                 if (currentBotPrice > 0) {
                     if (bot.price <= currentBotPrice) {
                         btnHtml = `
-                        <button disabled class="mt-2 w-full bg-gray-100 text-gray-400 font-bold py-3.5 rounded-xl flex items-center justify-center gap-2 border border-gray-200 cursor-not-allowed">
-                            Máquina Inferior ou Igual
+                        <button disabled class="bg-gray-100 text-gray-400 font-bold py-2 px-4 rounded-xl flex items-center justify-center gap-1 border border-gray-200 cursor-not-allowed text-xs sm:text-sm">
+                            Indisponível
                         </button>`;
                     } else {
                         const diferenca = bot.price - currentBotPrice;
                         btnHtml = `
-                        <button onclick="comprarBot('${bot._id}', ${diferenca}, true)" class="mt-2 w-full bg-[#00c853] hover:bg-[#00e676] text-white font-bold py-3.5 rounded-xl active:scale-95 transition-all flex items-center justify-center gap-2 shadow-[0_5px_15px_rgba(0,200,83,0.2)]">
-                            Atualizar (+${formatMT(diferenca)}) <span class="material-icons text-[1.1rem]">upgrade</span>
+                        <button onclick="prepararCompraBot('${bot._id}', ${diferenca}, true)" class="bg-[#00c853] hover:bg-[#00e676] text-white font-bold py-2 px-4 rounded-xl active:scale-95 transition-transform flex items-center justify-center gap-1 shadow-sm text-xs sm:text-sm">
+                            Atualizar <span class="material-icons text-[1.1rem]">arrow_forward</span>
                         </button>`;
                     }
                 } else {
                     btnHtml = `
-                    <button onclick="comprarBot('${bot._id}', ${bot.price}, false)" class="mt-2 w-full bg-gray-900 hover:bg-black text-white font-bold py-3.5 rounded-xl active:scale-95 transition-all flex items-center justify-center gap-2 shadow-md">
-                        Comprar Máquina <span class="material-icons text-[1.1rem]">shopping_cart</span>
+                    <button onclick="prepararCompraBot('${bot._id}', ${bot.price}, false)" class="bg-gray-900 hover:bg-black text-white font-bold py-2 px-4 rounded-xl active:scale-95 transition-transform flex items-center justify-center gap-1 shadow-md text-xs sm:text-sm">
+                        Adquirir <span class="material-icons text-[1.1rem]">arrow_forward</span>
                     </button>`;
                 }
 
                 return `
-                <div class="bg-white border border-gray-200 shadow-sm rounded-2xl p-4 flex flex-col gap-3 transition-transform hover:shadow-md">
-                    <div class="flex items-center gap-3 border-b border-gray-100 pb-3">
-                        <div class="bg-orange-50 w-12 h-12 rounded-xl flex items-center justify-center shrink-0 border border-orange-100">
-                            <img src="${bot.image || 'https://i.ibb.co/S4Z2THnC/77032-removebg-preview.png'}" class="w-8 h-8 object-contain" referrerpolicy="no-referrer">
-                        </div>
-                        <div class="flex flex-col">
-                            <h3 class="font-black text-gray-900 text-sm leading-tight">${bot.name}</h3>
-                            <span class="text-[0.65rem] text-bitcoin font-bold uppercase tracking-widest">IA Automática</span>
-                        </div>
+                <div class="bg-white border border-gray-200 shadow-sm rounded-2xl p-3 flex gap-3 transition-transform hover:shadow-md">
+                    
+                    <div class="w-[110px] sm:w-[130px] aspect-[4/5] bg-gray-50 rounded-xl flex items-center justify-center shrink-0 border border-gray-100 p-2 overflow-hidden relative">
+                        <img src="${bot.image || 'assets/images/default-bot.png'}" class="w-full h-full object-contain drop-shadow-md" referrerpolicy="no-referrer">
                     </div>
                     
-                    <div class="grid grid-cols-2 gap-y-3 gap-x-2 text-sm mt-1">
+                    <div class="flex flex-col justify-between w-full py-1">
                         <div class="flex flex-col">
-                            <span class="text-[0.60rem] text-gray-400 uppercase font-bold tracking-wide">Preço Base</span>
-                            <span class="font-black text-gray-900">${formatMT(bot.price)}</span>
+                            <h3 class="font-black text-gray-900 text-[0.95rem] sm:text-base leading-tight mb-2.5">${bot.name}</h3>
+                            
+                            <div class="flex flex-col gap-1.5 w-full">
+                                <div class="flex items-center gap-2">
+                                    <div class="w-1.5 h-1.5 rounded-full bg-bitcoin shrink-0 shadow-sm"></div>
+                                    <span class="text-[0.65rem] text-gray-500 font-bold uppercase tracking-wide">Preço: <span class="text-gray-900 font-black">${formatMT(bot.price)}</span></span>
+                                </div>
+                                <div class="flex items-center gap-2">
+                                    <div class="w-1.5 h-1.5 rounded-full bg-bitcoin shrink-0 shadow-sm"></div>
+                                    <span class="text-[0.65rem] text-gray-500 font-bold uppercase tracking-wide">Duração: <span class="text-gray-900 font-black">${bot.durationDays} Dias</span></span>
+                                </div>
+                                <div class="flex items-center gap-2">
+                                    <div class="w-1.5 h-1.5 rounded-full bg-bitcoin shrink-0 shadow-sm"></div>
+                                    <span class="text-[0.65rem] text-gray-500 font-bold uppercase tracking-wide">Ganhos / Dia: <span class="text-[#00c853] font-black">+${formatMT(bot.dailyProfit)}</span></span>
+                                </div>
+                                <div class="flex items-center gap-2">
+                                    <div class="w-1.5 h-1.5 rounded-full bg-bitcoin shrink-0 shadow-sm"></div>
+                                    <span class="text-[0.65rem] text-gray-500 font-bold uppercase tracking-wide">Retorno: <span class="text-bitcoin font-black">${formatMT(bot.totalReturn)}</span></span>
+                                </div>
+                            </div>
                         </div>
-                        <div class="flex flex-col">
-                            <span class="text-[0.60rem] text-gray-400 uppercase font-bold tracking-wide">Duração</span>
-                            <span class="font-black text-gray-900">${bot.durationDays} Dias</span>
-                        </div>
-                        <div class="flex flex-col">
-                            <span class="text-[0.60rem] text-gray-400 uppercase font-bold tracking-wide">Ganhos / Dia</span>
-                            <span class="font-black text-[#00c853]">+${formatMT(bot.dailyProfit)}</span>
-                        </div>
-                        <div class="flex flex-col">
-                            <span class="text-[0.60rem] text-gray-400 uppercase font-bold tracking-wide">Total Previsto</span>
-                            <span class="font-black text-bitcoin">${formatMT(bot.totalReturn)}</span>
+                        
+                        <div class="flex justify-end mt-2">
+                            ${btnHtml}
                         </div>
                     </div>
 
-                    ${btnHtml}
                 </div>
                 `;
             }).join('');
         }
 
-        async function comprarBot(botId, valorParaPagar, isUpgrade) {
-            const acao = isUpgrade ? 'fazer a atualização para' : 'comprar';
-            const confirmar = confirm(`Confirma ${acao} este robô por ${formatMT(valorParaPagar)}?\nO valor será deduzido do seu saldo real.`);
-            if (!confirmar) return;
+        // FUNÇÕES DO MODAL DE COMPRA
+        function prepararCompraBot(botId, valorParaPagar, isUpgrade) {
+            pendingBotId = botId;
+            pendingValorToPay = valorParaPagar;
+            pendingIsUpgrade = isUpgrade;
+
+            const modal = document.getElementById('modalConfirmBot');
+            const content = document.getElementById('modalConfirmBotContent');
+            const titulo = document.getElementById('botConfirmTitle');
+            const desc = document.getElementById('botConfirmDesc');
+
+            titulo.textContent = isUpgrade ? 'Confirmar Atualização' : 'Confirmar Aquisição';
+            desc.innerHTML = `Confirma o pagamento de <strong class="text-gray-900">${formatMT(valorParaPagar)}</strong> (deduzido do seu saldo real)?`;
+
+            modal.classList.remove('opacity-0', 'pointer-events-none');
+            modal.classList.add('opacity-100', 'pointer-events-auto');
+            content.classList.remove('scale-95');
+            content.classList.add('scale-100');
+        }
+
+        function fecharModalBotConfirm() {
+            const modal = document.getElementById('modalConfirmBot');
+            const content = document.getElementById('modalConfirmBotContent');
+
+            modal.classList.remove('opacity-100', 'pointer-events-auto');
+            modal.classList.add('opacity-0', 'pointer-events-none');
+            content.classList.remove('scale-100');
+            content.classList.add('scale-95');
+
+            pendingBotId = null;
+            pendingValorToPay = 0;
+            pendingIsUpgrade = false;
+        }
+
+        async function executarCompraBot() {
+            if (!pendingBotId) return;
+
+            fecharModalBotConfirm();
 
             try {
                 const res = await fetch(`${API_URL}/user/buy-bot`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
-                    body: JSON.stringify({ botId })
+                    body: JSON.stringify({ botId: pendingBotId })
                 });
                 
                 const data = await res.json();
 
                 if (res.ok) {
-                    exibirToast(isUpgrade ? 'Atualização feita com sucesso!' : 'Robô ativado com sucesso!', 'success');
+                    exibirToast(pendingIsUpgrade ? 'Atualização feita com sucesso!' : 'Robô adquirido com sucesso!', 'success');
                     await carregarDados(); 
                 } else {
                     exibirToast(data.error || 'Erro ao processar compra.', 'error');

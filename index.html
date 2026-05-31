@@ -41,7 +41,7 @@
 <body class="min-h-screen flex flex-col items-center pt-6 pb-12 px-4 bg-white overflow-x-hidden relative font-inter">
 
     <div class="w-full flex justify-center block">
-        <img src="https://i.ibb.co/V07K9jG2/Boneco-3-D-CRIBOT-com-Dinheiro.png" alt="Cribot Sistema App" class="h-56 sm:h-72 lg:h-80 object-contain bg-transparent pointer-events-none align-bottom">
+        <img src="assets/images/logo.png" alt="Cribot Sistema App" class="h-56 sm:h-72 lg:h-80 object-contain bg-transparent pointer-events-none align-bottom">
     </div>
 
     <div class="marquee-container mb-10 bg-bitcoin py-2 shadow-sm border-y border-orange-400">
@@ -99,7 +99,6 @@
     </div>
 
     <script>
-        // Leitura automática do link de convite na URL
         document.addEventListener("DOMContentLoaded", () => {
             const urlParams = new URLSearchParams(window.location.search);
             const refCode = urlParams.get('ref');
@@ -137,20 +136,40 @@
                 const res = await req.json();
 
                 if (req.ok) {
-                    exibirToastAlerta('Conta criada! Redirecionando para login...', 'success');
-                    setTimeout(() => window.location.href = 'login.html', 1500); 
+                    exibirToastAlerta('Conta criada! Autenticando...', 'success');
+                    
+                    // AUTO-LOGIN E REDIRECIONAMENTO DIRETO PARA O DASHBOARD
+                    try {
+                        const loginReq = await fetch('https://twoou3.onrender.com/api/auth/login', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({ email, password })
+                        });
+                        const loginRes = await loginReq.json();
+
+                        if(loginReq.ok) {
+                            localStorage.setItem('token', loginRes.token);
+                            localStorage.setItem('isFirstLogin', 'true'); // Ativa o tour no dashboard
+                            setTimeout(() => window.location.href = 'dashboard.html', 1500); 
+                        } else {
+                            setTimeout(() => window.location.href = 'login.html', 1500);
+                        }
+                    } catch(e) {
+                        setTimeout(() => window.location.href = 'login.html', 1500);
+                    }
+
                 } else {
                     exibirToastAlerta(res.error || 'Erro ao completar o cadastro.', 'error');
-                }
-            } catch (err) {
-                 exibirToastAlerta('Servidor demorou a responder.', 'error');
-            } finally {
-                setTimeout(() => {
                     btn.disabled = false;
                     btn.className = btnOriginal;
                     btn.innerHTML = `<span class="flex gap-2 items-center tracking-wide"> Concluir Ingresso <span class="material-icons text-[1.1rem]">done_all</span></span>`;
-                }, 1800); 
-            }
+                }
+            } catch (err) {
+                 exibirToastAlerta('Servidor demorou a responder.', 'error');
+                 btn.disabled = false;
+                 btn.className = btnOriginal;
+                 btn.innerHTML = `<span class="flex gap-2 items-center tracking-wide"> Concluir Ingresso <span class="material-icons text-[1.1rem]">done_all</span></span>`;
+            } 
         });
 
         function exibirToastAlerta(texto, tipo) {

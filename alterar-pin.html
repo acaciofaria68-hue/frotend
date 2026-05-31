@@ -41,7 +41,8 @@
     <main class="flex-1 w-full max-w-lg mx-auto px-4 pt-6 flex flex-col relative z-10">
         
         <div class="flex items-center gap-4 mb-6 pb-4 border-b border-gray-100">
-            <img src="https://i.ibb.co/4wK8Z7qf/Adobe-Express-file-5.png" alt="PIN" class="h-12 w-12 object-contain drop-shadow-sm">
+            <!-- Imagem Local -->
+            <img src="assets/images/icon-pin.png" alt="PIN" class="h-12 w-12 object-contain drop-shadow-sm">
             <div class="flex flex-col">
                 <span class="font-black text-gray-900 text-base">Código PIN de Saque</span>
                 <span class="text-[0.65rem] text-gray-500 font-bold uppercase tracking-widest mt-0.5">Segurança para transferências</span>
@@ -121,8 +122,6 @@
             btn.disabled = true; btn.innerHTML = 'Processando...';
 
             try {
-                // OBS: Para esta funcionalidade ser 100% real, você precisará adicionar
-                // a rota PUT /api/user/change-pin no backend (userRoutes.js).
                 const res = await fetch(`${API_URL}/user/change-pin`, {
                     method: 'PUT',
                     headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
