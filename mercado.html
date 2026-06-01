@@ -107,7 +107,7 @@
             <div class="flex items-center gap-2">
                 <span class="iconify text-bitcoin text-lg" data-icon="cryptocurrency-color:btc"></span>
                 <span class="font-bold text-gray-900 text-sm">Bitcoin (BTC/USDT)</span>
-                <span class="text-[#F7931A] font-black text-sm">92%</span>
+                <span class="text-[#F7931A] font-black text-sm" id="payoutPercentageUI">92%</span>
             </div>
         </div>
 
@@ -245,6 +245,7 @@
         
         let minTradeLimit = 50;
         let maxTradeLimit = 50000;
+        let payoutRate = 0.92; // Valor default, será substituído pela API
 
         let somAtivo = localStorage.getItem('somCribot') !== 'desativado'; 
         let currentBalanceGlobal = 0; 
@@ -266,6 +267,11 @@
                 if (res.ok) {
                     minTradeLimit = data.minTrade || 50;
                     maxTradeLimit = data.maxTrade || 50000;
+                    
+                    if (data.tradePayoutPct) {
+                        payoutRate = data.tradePayoutPct / 100;
+                        document.getElementById('payoutPercentageUI').textContent = data.tradePayoutPct + '%';
+                    }
                     
                     const tradeAmountEl = document.getElementById('tradeAmount');
                     if (Number(tradeAmountEl.value) < minTradeLimit) {
@@ -399,9 +405,6 @@
             }));
         }
 
-        // ==========================================
-        // LÓGICA DE GRÁFICO SUPER FLUIDO
-        // ==========================================
         async function renderizarGrafico(intervalo = '1m') {
             const container = document.getElementById('tv_chart');
             container.innerHTML = ''; 
@@ -525,7 +528,7 @@
                     if (ct.direction === 'put' && actualPrice < ct.entryPrice) isWin = true;
 
                     if (isWin) {
-                        const profit = ct.amount * 0.92;
+                        const profit = ct.amount * payoutRate;
                         spanPl.innerHTML = `<span class="text-[#00c853] font-black">+${formatMT(profit)}</span>`;
                     } else {
                         spanPl.innerHTML = `<span class="text-[#ff1744] font-black">-${formatMT(ct.amount)}</span>`;
@@ -547,7 +550,7 @@
         function calcularPayout() {
             let val = Number(document.getElementById('tradeAmount').value) || 0;
             if(val < 0) { val = 0; document.getElementById('tradeAmount').value = 0; }
-            const payoutCalc = val + (val * 0.92); 
+            const payoutCalc = val + (val * payoutRate); 
             document.getElementById('payoutCalc').textContent = formatMT(payoutCalc);
         }
 
@@ -609,9 +612,6 @@
             }
         }
 
-        // ==========================================
-        // NOVA LÓGICA BLINDADA DE START & RESOLVE
-        // ==========================================
         async function iniciarTrade(direction) {
             const amount = Number(document.getElementById('tradeAmount').value);
             
@@ -626,14 +626,12 @@
             const durationSecs = parseInt(document.getElementById('tradeDuration').value);
             document.getElementById('tradeButtons').classList.add('opacity-50', 'pointer-events-none');
             
-            // 1. CAPTURA O PREÇO E DESENHA A LINHA IMEDIATAMENTE NO GRÁFICO (Zero Delay Visual)
             const clickedPrice = actualPrice;
             let priceLine = candleSeries.createPriceLine({
                 price: clickedPrice, color: direction === 'call' ? '#00c853' : '#ff1744', lineWidth: 2, lineStyle: 0, axisLabelVisible: true, title: direction === 'call' ? 'COMPRA' : 'VENDA'
             });
             
             try {
-                // START TRADE enviando também o preço visual (clickedPrice) para o servidor validar
                 const res = await fetch(`${API_URL}/user/trade/start`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
@@ -644,13 +642,12 @@
                 document.getElementById('tradeButtons').classList.remove('opacity-50', 'pointer-events-none');
                 
                 if (!res.ok) {
-                    candleSeries.removePriceLine(priceLine); // Apaga a linha se o servidor recusar
+                    candleSeries.removePriceLine(priceLine); 
                     exibirToast(data.error || 'Erro ao abrir operação.', 'error');
                     carregarSaldo(); 
                     return;
                 }
                 
-                // Se o servidor forçou um preço diferente por causa de um delay muito grande, corrigimos a linha
                 if (data.entryPrice !== clickedPrice) {
                     candleSeries.removePriceLine(priceLine);
                     priceLine = candleSeries.createPriceLine({
@@ -658,7 +655,6 @@
                     });
                 }
                 
-                // Sucesso: Configura o Contrato Local
                 const tradeId = data.tradeId;
                 const entryPrice = data.entryPrice;
                 
@@ -678,7 +674,7 @@
                 
                 iniciarIntervaloRecuperado(contratoObj);
             } catch (err) {
-                candleSeries.removePriceLine(priceLine); // Apaga a linha se falhar a net
+                candleSeries.removePriceLine(priceLine); 
                 document.getElementById('tradeButtons').classList.remove('opacity-50', 'pointer-events-none');
                 exibirToast('Erro de comunicação. Verifique a internet.', 'error');
             }
@@ -709,7 +705,6 @@
             const closeTime = currentBar ? currentBar.time : serverCandleTime;
 
             try {
-                // RESOLVE TRADE NO BACKEND (Servidor vai a Binance validar o Preço de Saída Final)
                 const res = await fetch(`${API_URL}/user/trade/resolve`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
@@ -730,7 +725,7 @@
                     exibirResultadoNaListaDeAtivos(data.trade);
                     
                     const isWin = data.trade.status === 'won';
-                    const resultAmount = isWin ? (ct.amount * 0.92) : ct.amount;
+                    const resultAmount = isWin ? (ct.amount * payoutRate) : ct.amount;
                     
                     mostrarBalaoResultado(data.exitPrice, closeTime, isWin, resultAmount);
 
@@ -855,7 +850,7 @@
                     </div>
                     <div class="text-right flex flex-col items-end">
                         <span class="text-[0.60rem] ${isWin ? 'text-[#00c853]' : 'text-[#ff1744]'} uppercase font-black">${isWin ? 'Lucro' : 'Perda'}</span>
-                        <p class="font-black ${isWin ? 'text-[#00c853]' : 'text-[#ff1744]'} text-lg">${isWin ? '+' : '-'}${formatMT(Math.abs(trade.amount * (isWin ? 0.92 : 1)))}</p>
+                        <p class="font-black ${isWin ? 'text-[#00c853]' : 'text-[#ff1744]'} text-lg">${isWin ? '+' : '-'}${formatMT(Math.abs(trade.amount * (isWin ? payoutRate : 1)))}</p>
                     </div>
                 </div>
             `;
@@ -910,7 +905,7 @@
                             </div>
                             <div class="text-right flex flex-col items-end">
                                 <span class="text-[0.60rem] ${isWin ? 'text-[#00c853]' : 'text-[#ff1744]'} uppercase font-black">${isWin ? 'Lucro' : 'Perda'}</span>
-                                <p class="font-black ${isWin ? 'text-[#00c853]' : 'text-[#ff1744]'} text-[1.10rem]">${isWin ? '+' : '-'}${formatMT(Math.abs(trade.amount * (isWin ? 0.92 : 1)))}</p>
+                                <p class="font-black ${isWin ? 'text-[#00c853]' : 'text-[#ff1744]'} text-[1.10rem]">${isWin ? '+' : '-'}${formatMT(Math.abs(trade.amount * (isWin ? payoutRate : 1)))}</p>
                             </div>
                         </div>
                     `;
