@@ -14,10 +14,6 @@
     <!-- Script Iconify e Tailwind -->
     <script src="https://code.iconify.design/3/3.1.0/iconify.min.js"></script>
     <script src="https://cdn.tailwindcss.com"></script>
-
-    <!-- DRIVER.JS PARA O TOUR GUIADO -->
-    <script src="https://cdn.jsdelivr.net/npm/driver.js@1.3.1/dist/driver.js.iife.js"></script>
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/driver.js@1.3.1/dist/driver.css">
     
     <script>
         tailwind.config = {
@@ -35,15 +31,12 @@
             animation: marquee-scroll 40s linear infinite;
         }
         @keyframes marquee-scroll { 0% { transform: translateX(0); } 100% { transform: translateX(-50%); } }
-        
-        .driver-popover { font-family: 'Inter', sans-serif !important; border-radius: 12px !important; }
-        .driver-popover-title { font-weight: 900 !important; font-size: 18px !important; color: #111827 !important; }
-        .driver-popover-description { font-weight: 500 !important; color: #4b5563 !important; }
     </style>
 </head>
 
 <body class="min-h-screen flex flex-col pb-24 md:pb-8 bg-white relative">
 
+    <!-- Modal Bem-Vindo / Grupo -->
     <div id="welcomeModal" class="fixed inset-0 z-[9999] bg-black/60 backdrop-blur-sm opacity-0 pointer-events-none transition-opacity duration-300 flex justify-center items-center px-4">
         <div class="bg-white w-full max-w-sm mx-auto rounded-3xl shadow-2xl relative flex flex-col max-h-[85vh] transform scale-95 transition-transform duration-300 overflow-hidden" id="welcomeModalContent">
             
@@ -60,12 +53,12 @@
                     <ul class="list-disc pl-5 space-y-2 text-gray-800">
                         <li><strong>Lucros Automáticos:</strong> Máquinas IA que geram rendimentos diários sem esforço.</li>
                         <li><strong>Programa de Convites:</strong> Ganhe comissões reais no seu saldo por cada amigo ativo.</li>
-                        <li><strong>Transparência:</strong> Relatórios de mercado e suporte direto.</li>
+                        <li><strong>Mercado Real:</strong> Multiplique o seu saldo com operações ao vivo.</li>
                     </ul>
                 </div>
             </div>
             
-            <a href="https://chat.whatsapp.com/JA1kgE1dNVy4WVNQ3oMAHl" target="_blank" class="w-full bg-[#25D366] hover:bg-[#20b858] text-white font-black py-4 flex items-center justify-center gap-2 transition-colors mt-auto">
+            <a href="https://chat.whatsapp.com/JA1kgE1dNVy4WVNQ3oMAHl" target="_blank" onclick="fecharModalBemVindo()" class="w-full bg-[#25D366] hover:bg-[#20b858] text-white font-black py-4 flex items-center justify-center gap-2 transition-colors mt-auto">
                 <span class="iconify text-2xl" data-icon="ic:baseline-whatsapp"></span> Entrar no Grupo Oficial
             </a>
         </div>
@@ -73,7 +66,7 @@
 
     <!-- ÁREA SUPERIOR -->
     <div class="bg-gradient-to-b from-[#FF5E00] to-[#FF8C00] pt-6 pb-12 px-5 md:ml-64 border-none rounded-b-[2rem] z-0">
-        <div id="balanceCardTour" class="bg-gradient-to-r from-[#D83100] via-[#FF5A00] to-[#FF8C00] rounded-3xl p-5 sm:p-6 border border-white/20 relative overflow-hidden flex flex-col gap-4 shadow-xl">
+        <div class="bg-gradient-to-r from-[#D83100] via-[#FF5A00] to-[#FF8C00] rounded-3xl p-5 sm:p-6 border border-white/20 relative overflow-hidden flex flex-col gap-4 shadow-xl">
             <div class="flex items-start justify-between relative z-10 w-full">
                 <div class="flex flex-col gap-1 w-2/3">
                     <span class="text-xs text-white/90 font-bold uppercase tracking-widest">SALDO REAL</span>
@@ -101,7 +94,7 @@
     <main class="flex-1 w-full max-w-4xl mx-auto px-5 -mt-6 flex flex-col gap-5 relative z-10 md:ml-64 md:max-w-[calc(100%-16rem)]">
         
         <!-- ESTATÍSTICAS RÁPIDAS -->
-        <div class="grid grid-cols-2 gap-4" id="statsTour">
+        <div class="grid grid-cols-2 gap-4">
             <div class="bg-gradient-to-br from-green-50 to-white rounded-2xl p-4 border border-green-100 flex items-center gap-3 shadow-sm">
                 <img src="assets/images/icon-profit.png" alt="Lucro" class="h-11 w-11 sm:h-12 sm:w-12 object-contain shrink-0">
                 <div class="flex flex-col truncate">
@@ -120,7 +113,7 @@
         </div>
 
         <!-- MENU DE AÇÕES RÁPIDAS -->
-        <div class="grid grid-cols-3 gap-3" id="menuActionsTour">
+        <div class="grid grid-cols-3 gap-3">
             <button onclick="window.location.href='historico.html'" class="bg-white border border-gray-100 shadow-sm rounded-2xl p-3 flex flex-col items-center justify-center gap-1.5 active:scale-95 transition-transform">
                 <div class="h-12 w-12 flex items-center justify-center">
                     <img src="assets/images/icon-history.png" alt="Histórico" class="h-10 w-10 object-contain drop-shadow-sm">
@@ -143,11 +136,13 @@
             </button>
         </div>
 
+        <!-- CARROSSEL -->
         <div class="bg-gradient-to-r from-[#FF5E00] to-[#F7931A] rounded-2xl overflow-hidden py-3 flex items-center border border-orange-300 relative shadow-sm mt-1">
             <div id="carouselContainer" class="marquee-withdrawals px-4 gap-8"></div>
         </div>
 
-        <div class="mt-2 mb-2" id="liveTradeTour">
+        <!-- MERCADO -->
+        <div class="mt-2 mb-2">
             <div class="flex justify-between items-end mb-4">
                 <h3 class="text-lg font-bold text-gray-900">Mercado Cripto</h3>
             </div>
@@ -165,6 +160,7 @@
             </div>
         </div>
 
+        <!-- NOTÍCIAS -->
         <div class="mt-4 mb-6">
             <div class="flex justify-between items-end mb-4">
                 <h3 class="text-lg font-bold text-gray-900">Notícias Cripto</h3>
@@ -235,63 +231,7 @@
         let token = localStorage.getItem('token');
         const formatMT = (value) => Number(value).toLocaleString('pt-MZ', { minimumFractionDigits: 2 }) + ' MT';
 
-        const driver = window.driver.js.driver;
-
-        function iniciarTour() {
-            const tour = driver({
-                showProgress: true,
-                animate: true,
-                doneBtnText: 'Entendi!',
-                closeBtnText: 'Pular Tour',
-                nextBtnText: 'Próximo &rarr;',
-                prevBtnText: '&larr; Voltar',
-                steps: [
-                    { element: '#balanceCardTour', popover: { title: 'Sua Carteira', description: 'Aqui você visualiza o seu saldo real, pronto para ser investido ou levantado a qualquer momento.', side: "bottom", align: 'start' } },
-                    { element: '#statsTour', popover: { title: 'Resumo Financeiro', description: 'Acompanhe de forma simples todos os seus lucros acumulados e o capital já investido.', side: "bottom", align: 'start' } },
-                    { element: '#menuActionsTour', popover: { title: 'Acesso Rápido', description: 'Acesse o seu histórico de transações, entre no grupo oficial ou vá direto ao gráfico de mercado.', side: "bottom", align: 'start' } },
-                    { element: '#liveTradeTour', popover: { title: 'Mercado Cripto ao Vivo', description: 'Onde a magia acontece! Pode operar no mercado BTC/USDT em tempo real e lucrar.', side: "top", align: 'start' } }
-                ],
-                onDestroyStarted: () => {
-                    tour.destroy();
-                    localStorage.removeItem('isFirstLogin');
-                    
-                    // Salva a intenção de mostrar o Tour de Bônus após fechar o modal
-                    sessionStorage.setItem('showBonusTour', 'true');
-                    abrirModalBemVindo(); 
-                }
-            });
-            tour.drive();
-        }
-
-        function iniciarTourBonus() {
-            const bonusTour = driver({
-                showProgress: false,
-                animate: true,
-                doneBtnText: 'Operar Agora!',
-                steps: [
-                    { 
-                        element: '#liveTradeTour', 
-                        popover: { 
-                            title: '🎁 Bónus Disponível!', 
-                            description: 'Você recebeu saldo de boas-vindas grátis. Clique aqui agora mesmo para fazer a sua primeira operação no Mercado Real sem riscos!', 
-                            side: "top", 
-                            align: 'center' 
-                        } 
-                    }
-                ],
-                onDestroyStarted: () => {
-                    bonusTour.destroy();
-                }
-            });
-            
-            // Faz um scroll suave para garantir que o utilizador veja o botão do mercado
-            document.getElementById('liveTradeTour').scrollIntoView({ behavior: 'smooth', block: 'center' });
-            
-            setTimeout(() => {
-                bonusTour.drive();
-            }, 500);
-        }
-
+        // LÓGICA DO MODAL INDEPENDENTE
         function abrirModalBemVindo() {
             const modal = document.getElementById('welcomeModal');
             const content = document.getElementById('welcomeModalContent');
@@ -308,12 +248,6 @@
             modal.classList.add('opacity-0', 'pointer-events-none');
             content.classList.remove('scale-100');
             content.classList.add('scale-95');
-
-            // Verifica se deve rodar o Tour do Bônus
-            if (sessionStorage.getItem('showBonusTour') === 'true') {
-                sessionStorage.removeItem('showBonusTour');
-                setTimeout(() => iniciarTourBonus(), 400); // Aguarda o fade-out do modal
-            }
         }
 
         document.addEventListener("DOMContentLoaded", async () => {
@@ -322,10 +256,9 @@
             await carregarDashboard();
             await carregarNoticiasCripto();
 
-            if(localStorage.getItem('isFirstLogin') === 'true') {
-                setTimeout(() => { iniciarTour(); }, 800);
-            } else if (!sessionStorage.getItem('welcomeModalShown')) {
-                abrirModalBemVindo();
+            // Mostra o Modal de Grupo/Bem-vindo de forma limpa, 1x por sessão logada
+            if (!sessionStorage.getItem('welcomeModalShown')) {
+                setTimeout(() => { abrirModalBemVindo(); }, 600);
                 sessionStorage.setItem('welcomeModalShown', 'true');
             }
         });

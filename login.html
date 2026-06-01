@@ -125,8 +125,8 @@
                     exibirToast('Acesso liberado! Redirecionando...', 'success');
                     
                     localStorage.setItem('token', data.token);
-                    sessionStorage.removeItem('welcomeModalShown');
 
+                    // REMOVIDO: Limpeza de trigger do modal (A lógica foi toda para o dashboard.html de forma autónoma).
                     setTimeout(() => window.location.href = 'dashboard.html', 1500); 
                 } else {
                     exibirToast(data.error || 'Credenciais inválidas.', 'error');
