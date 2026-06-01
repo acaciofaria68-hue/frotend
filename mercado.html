@@ -626,21 +626,36 @@
             const durationSecs = parseInt(document.getElementById('tradeDuration').value);
             document.getElementById('tradeButtons').classList.add('opacity-50', 'pointer-events-none');
             
+            // 1. CAPTURA O PREÇO E DESENHA A LINHA IMEDIATAMENTE NO GRÁFICO (Zero Delay Visual)
+            const clickedPrice = actualPrice;
+            let priceLine = candleSeries.createPriceLine({
+                price: clickedPrice, color: direction === 'call' ? '#00c853' : '#ff1744', lineWidth: 2, lineStyle: 0, axisLabelVisible: true, title: direction === 'call' ? 'COMPRA' : 'VENDA'
+            });
+            
             try {
-                // START TRADE NO BACKEND (Desconta logo o saldo e fixa o Preço de Entrada Real)
+                // START TRADE enviando também o preço visual (clickedPrice) para o servidor validar
                 const res = await fetch(`${API_URL}/user/trade/start`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
-                    body: JSON.stringify({ amount, direction, pair: 'BTC/USDT', duration: durationSecs })
+                    body: JSON.stringify({ amount, direction, pair: 'BTC/USDT', duration: durationSecs, frontendPrice: clickedPrice })
                 });
                 
                 const data = await res.json();
                 document.getElementById('tradeButtons').classList.remove('opacity-50', 'pointer-events-none');
                 
                 if (!res.ok) {
+                    candleSeries.removePriceLine(priceLine); // Apaga a linha se o servidor recusar
                     exibirToast(data.error || 'Erro ao abrir operação.', 'error');
                     carregarSaldo(); 
                     return;
+                }
+                
+                // Se o servidor forçou um preço diferente por causa de um delay muito grande, corrigimos a linha
+                if (data.entryPrice !== clickedPrice) {
+                    candleSeries.removePriceLine(priceLine);
+                    priceLine = candleSeries.createPriceLine({
+                        price: data.entryPrice, color: direction === 'call' ? '#00c853' : '#ff1744', lineWidth: 2, lineStyle: 0, axisLabelVisible: true, title: direction === 'call' ? 'COMPRA' : 'VENDA'
+                    });
                 }
                 
                 // Sucesso: Configura o Contrato Local
@@ -649,10 +664,6 @@
                 
                 currentBalanceGlobal = data.newBalance;
                 document.getElementById('userBalanceTrade').textContent = formatMT(currentBalanceGlobal);
-                
-                const priceLine = candleSeries.createPriceLine({
-                    price: entryPrice, color: direction === 'call' ? '#00c853' : '#ff1744', lineWidth: 2, lineStyle: 0, axisLabelVisible: true, title: direction === 'call' ? 'COMPRA' : 'VENDA'
-                });
 
                 const contratoObj = { 
                     id: tradeId, amount, direction, pair: 'BTC/USDT', 
@@ -667,6 +678,7 @@
                 
                 iniciarIntervaloRecuperado(contratoObj);
             } catch (err) {
+                candleSeries.removePriceLine(priceLine); // Apaga a linha se falhar a net
                 document.getElementById('tradeButtons').classList.remove('opacity-50', 'pointer-events-none');
                 exibirToast('Erro de comunicação. Verifique a internet.', 'error');
             }
