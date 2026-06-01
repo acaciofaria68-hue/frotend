@@ -56,24 +56,6 @@
         <span id="toastMsg" class="text-[0.85rem] font-bold">Notificação</span>
     </div>
 
-    <!-- MODAL BLOQUEIO DE TRADE -->
-    <div id="modalBloqueioTrade" class="fixed inset-0 z-[9999] modal-overlay flex flex-col justify-end md:justify-center md:items-center">
-        <div class="bg-white w-full max-w-sm mx-auto rounded-t-3xl md:rounded-3xl p-6 modal-content shadow-2xl relative flex flex-col items-center text-center">
-            
-            <div class="mb-3 text-gray-800">
-                <span class="material-icons" style="font-size: 3.5rem;">lock</span>
-            </div>
-            
-            <h3 class="font-black text-gray-900 text-xl mb-2">Acesso Restrito</h3>
-            <p class="text-sm text-gray-500 font-medium mb-6">Para operar no mercado real, é necessário adquirir uma máquina equivalente ao <strong class="text-gray-900" id="nomePlanoModal">Plano de 1.000 MT</strong> na área Auto.</p>
-            
-            <div class="flex gap-3 w-full">
-                <button onclick="document.getElementById('modalBloqueioTrade').classList.remove('active')" class="flex-1 bg-gray-100 text-gray-600 font-bold py-3.5 rounded-xl active:scale-95 transition-transform">Cancelar</button>
-                <button onclick="window.location.href='auto.html'" class="flex-1 bg-gray-900 hover:bg-black text-white font-bold py-3.5 rounded-xl active:scale-95 transition-transform shadow-md">Ir para Loja</button>
-            </div>
-        </div>
-    </div>
-
     <!-- CABEÇALHO SUPERIOR -->
     <div class="bg-white pt-4 pb-3 px-4 border-b border-gray-100 flex justify-between items-center z-40 shrink-0 shadow-sm w-full">
         <div class="flex items-center gap-3">
@@ -263,9 +245,9 @@
         
         let minTradeLimit = 50;
         let maxTradeLimit = 50000;
-        let totalInvestidoGlobal = 0; 
 
         let somAtivo = localStorage.getItem('somCribot') !== 'desativado'; 
+        let currentBalanceGlobal = 0; 
         
         document.addEventListener("DOMContentLoaded", async () => {
             if (!token) window.location.href = 'index.html';
@@ -273,23 +255,9 @@
             document.getElementById('iconeSom').innerText = somAtivo ? 'volume_up' : 'volume_off';
             
             await carregarConfiguracoesELimites();
-            await carregarNomePlanoVIP(); 
             renderizarGrafico('1m'); 
             await carregarSaldo();
         });
-
-        async function carregarNomePlanoVIP() {
-            try {
-                const res = await fetch(`${API_URL}/user/bots`, { headers: { 'Authorization': `Bearer ${token}` } });
-                const bots = await res.json();
-                if (res.ok && bots.length > 0) {
-                    const botVIP = bots.find(b => b.price >= 1000);
-                    if (botVIP) {
-                        document.getElementById('nomePlanoModal').innerHTML = `${botVIP.name} (Mínimo de ${formatMT(botVIP.price)})`;
-                    }
-                }
-            } catch(e) {}
-        }
 
         async function carregarConfiguracoesELimites() {
             try {
@@ -431,6 +399,9 @@
             }));
         }
 
+        // ==========================================
+        // LÓGICA DE GRÁFICO SUPER FLUIDO
+        // ==========================================
         async function renderizarGrafico(intervalo = '1m') {
             const container = document.getElementById('tv_chart');
             container.innerHTML = ''; 
@@ -497,37 +468,44 @@
         }
 
         function iniciarEscutaBinance(interval) {
-            binanceWs = new WebSocket(`wss://stream.binance.com:9443/ws/btcusdt@kline_${interval}`);
+            binanceWs = new WebSocket(`wss://stream.binance.com:9443/stream?streams=btcusdt@kline_${interval}/btcusdt@trade`);
             
             binanceWs.onmessage = (event) => {
                 const message = JSON.parse(event.data);
-                const kline = message.k;
-                
-                targetPrice = parseFloat(kline.c);
-                serverCandleTime = Math.floor(kline.t / 1000);
-                
-                if (animatedPrice === 0) animatedPrice = targetPrice;
+                if (!message.data) return;
+
+                if (message.stream.includes('@kline')) {
+                    const kline = message.data.k;
+                    serverCandleTime = Math.floor(kline.t / 1000);
+                    if (currentBar && currentBar.time === serverCandleTime) {
+                        currentBar.high = Math.max(currentBar.high, parseFloat(kline.h));
+                        currentBar.low = Math.min(currentBar.low, parseFloat(kline.l));
+                    }
+                } else if (message.stream.includes('@trade')) {
+                    targetPrice = parseFloat(message.data.p);
+                    if (animatedPrice === 0) animatedPrice = targetPrice;
+                }
             };
         }
 
         function animate() {
             if (targetPrice !== 0 && animatedPrice !== 0 && currentBar && serverCandleTime) {
                 const diff = targetPrice - animatedPrice;
-                animatedPrice += diff * 0.15; 
+                animatedPrice += diff * 0.35; 
 
                 const displayPrice = Math.round(animatedPrice * 100) / 100;
                 actualPrice = displayPrice;
 
                 if (currentBar.time === serverCandleTime) {
                     currentBar.close = displayPrice;
-                    currentBar.high = Math.max(currentBar.high, targetPrice, displayPrice);
-                    currentBar.low = Math.min(currentBar.low, targetPrice, displayPrice);
+                    currentBar.high = Math.max(currentBar.high, displayPrice);
+                    currentBar.low = Math.min(currentBar.low, displayPrice);
                 } else if (serverCandleTime > currentBar.time) {
                     currentBar = { 
                         time: serverCandleTime, 
-                        open: displayPrice, 
-                        high: displayPrice, 
-                        low: displayPrice, 
+                        open: currentBar.close, 
+                        high: Math.max(currentBar.close, displayPrice), 
+                        low: Math.min(currentBar.close, displayPrice), 
                         close: displayPrice 
                     };
                 }
@@ -566,8 +544,6 @@
             renderizarGrafico(intervalo);
         }
 
-        let currentBalanceGlobal = 0; 
-
         function calcularPayout() {
             let val = Number(document.getElementById('tradeAmount').value) || 0;
             if(val < 0) { val = 0; document.getElementById('tradeAmount').value = 0; }
@@ -601,7 +577,6 @@
                         blElement.textContent = formatMT(data.user.balance);
                     }
                     currentBalanceGlobal = data.user.balance;
-                    totalInvestidoGlobal = data.user.invested || 0; 
                 }
             } catch (e) { }
         }
@@ -634,14 +609,15 @@
             }
         }
 
-        function iniciarTrade(direction) {
-            if (totalInvestidoGlobal < 1000) {
-                document.getElementById('modalBloqueioTrade').classList.add('active');
-                return;
-            }
-
+        // ==========================================
+        // NOVA LÓGICA BLINDADA DE START & RESOLVE
+        // ==========================================
+        async function iniciarTrade(direction) {
             const amount = Number(document.getElementById('tradeAmount').value);
             
+            if (amount > currentBalanceGlobal) {
+                return exibirToast(`Saldo insuficiente. O seu saldo atual é ${formatMT(currentBalanceGlobal)}.`, 'error');
+            }
             if (!amount || amount < minTradeLimit) return exibirToast(`O valor mínimo é ${minTradeLimit} MT!`, 'error');
             if (amount > maxTradeLimit) return exibirToast(`O valor máximo é ${maxTradeLimit} MT!`, 'error');
 
@@ -649,28 +625,51 @@
 
             const durationSecs = parseInt(document.getElementById('tradeDuration').value);
             document.getElementById('tradeButtons').classList.add('opacity-50', 'pointer-events-none');
-            setTimeout(() => document.getElementById('tradeButtons').classList.remove('opacity-50', 'pointer-events-none'), 500);
             
-            const tempId = 'ct_' + Date.now();
-            const entryPrice = actualPrice; 
-            
-            const priceLine = candleSeries.createPriceLine({
-                price: entryPrice, color: direction === 'call' ? '#00c853' : '#ff1744', lineWidth: 2, lineStyle: 0, axisLabelVisible: true, title: direction === 'call' ? 'COMPRA' : 'VENDA'
-            });
+            try {
+                // START TRADE NO BACKEND (Desconta logo o saldo e fixa o Preço de Entrada Real)
+                const res = await fetch(`${API_URL}/user/trade/start`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+                    body: JSON.stringify({ amount, direction, pair: 'BTC/USDT', duration: durationSecs })
+                });
+                
+                const data = await res.json();
+                document.getElementById('tradeButtons').classList.remove('opacity-50', 'pointer-events-none');
+                
+                if (!res.ok) {
+                    exibirToast(data.error || 'Erro ao abrir operação.', 'error');
+                    carregarSaldo(); 
+                    return;
+                }
+                
+                // Sucesso: Configura o Contrato Local
+                const tradeId = data.tradeId;
+                const entryPrice = data.entryPrice;
+                
+                currentBalanceGlobal = data.newBalance;
+                document.getElementById('userBalanceTrade').textContent = formatMT(currentBalanceGlobal);
+                
+                const priceLine = candleSeries.createPriceLine({
+                    price: entryPrice, color: direction === 'call' ? '#00c853' : '#ff1744', lineWidth: 2, lineStyle: 0, axisLabelVisible: true, title: direction === 'call' ? 'COMPRA' : 'VENDA'
+                });
 
-            const contratoObj = { 
-                id: tempId, amount, direction, pair: 'BTC/USDT', 
-                initialDuration: durationSecs, tempoFaltante: durationSecs, 
-                entryPrice: entryPrice, startTime: Date.now(), priceLine: priceLine,
-                countdownPlayed: false 
-            };
-            
-            contratosAtivos.push(contratoObj);
-            salvarTradesLocal(); 
-
-            document.getElementById('activeDot').classList.remove('hidden'); 
-            
-            iniciarIntervaloRecuperado(contratoObj);
+                const contratoObj = { 
+                    id: tradeId, amount, direction, pair: 'BTC/USDT', 
+                    initialDuration: durationSecs, tempoFaltante: durationSecs, 
+                    entryPrice: entryPrice, startTime: Date.now(), priceLine: priceLine,
+                    countdownPlayed: false 
+                };
+                
+                contratosAtivos.push(contratoObj);
+                salvarTradesLocal(); 
+                document.getElementById('activeDot').classList.remove('hidden'); 
+                
+                iniciarIntervaloRecuperado(contratoObj);
+            } catch (err) {
+                document.getElementById('tradeButtons').classList.remove('opacity-50', 'pointer-events-none');
+                exibirToast('Erro de comunicação. Verifique a internet.', 'error');
+            }
         }
 
         function iniciarIntervaloRecuperado(ct) {
@@ -689,19 +688,20 @@
 
                 if (ct.tempoFaltante <= 0) {
                     clearInterval(interval);
-                    await confirmarResultadoBackend(ct, actualPrice); 
+                    await confirmarResultadoBackend(ct); 
                 }
             }, 1000);
         }
 
-        async function confirmarResultadoBackend(ct, exitPrice) {
+        async function confirmarResultadoBackend(ct) {
             const closeTime = currentBar ? currentBar.time : serverCandleTime;
 
             try {
-                const res = await fetch(`${API_URL}/user/trade`, {
+                // RESOLVE TRADE NO BACKEND (Servidor vai a Binance validar o Preço de Saída Final)
+                const res = await fetch(`${API_URL}/user/trade/resolve`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
-                    body: JSON.stringify({ amount: ct.amount, direction: ct.direction, pair: ct.pair, entryPrice: ct.entryPrice, exitPrice: exitPrice })
+                    body: JSON.stringify({ tradeId: ct.id })
                 });
                 const data = await res.json();
 
@@ -712,22 +712,28 @@
                 if(contratosAtivos.length === 0) document.getElementById('activeDot').classList.add('hidden');
 
                 if (res.ok) {
-                    carregarSaldo(); 
+                    currentBalanceGlobal = data.newBalance;
+                    document.getElementById('userBalanceTrade').textContent = formatMT(currentBalanceGlobal);
+
                     exibirResultadoNaListaDeAtivos(data.trade);
                     
                     const isWin = data.trade.status === 'won';
                     const resultAmount = isWin ? (ct.amount * 0.92) : ct.amount;
                     
-                    mostrarBalaoResultado(exitPrice, closeTime, isWin, resultAmount);
+                    mostrarBalaoResultado(data.exitPrice, closeTime, isWin, resultAmount);
 
                     if (isWin) tocarSom('soundWin');
                     else tocarSom('soundLoss');
 
                 } else {
-                    exibirToast(data.error || 'Não foi possível processar a entrada.', 'error');
+                    exibirToast(data.error || 'Operação processada pelo servidor.', 'info');
+                    carregarSaldo(); 
+                    carregarHistorico();
                 }
             } catch (err) { 
-                exibirToast('Sem conexão. Verifique a internet e tente recarregar.', 'error'); 
+                exibirToast('Sem conexão. Atualizando saldo...', 'error'); 
+                carregarSaldo();
+                carregarHistorico();
             }
         }
 

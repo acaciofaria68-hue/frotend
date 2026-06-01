@@ -34,7 +34,7 @@
         <span id="toastMsg" class="text-[0.85rem] font-bold">Notificação</span>
     </div>
 
-    <!-- CABEÇALHO COM Z-INDEX ALTO PARA EVITAR MISTURA COM O CONTEÚDO -->
+    <!-- CABEÇALHO -->
     <div class="pt-6 pb-4 relative z-[60] flex flex-col border-b border-gray-100 bg-white sticky top-0 md:ml-64 shadow-sm">
         <div class="w-full max-w-4xl mx-auto flex justify-start items-center gap-3 px-5">
             <button onclick="window.history.back()" class="text-gray-500 hover:text-gray-900 active:scale-95 transition-transform flex items-center justify-center bg-gray-50 h-10 w-10 rounded-xl border border-gray-200 shadow-sm">
@@ -46,7 +46,6 @@
             </div>
         </div>
 
-        <!-- FILTROS (SCROLL HORIZONTAL) -->
         <div class="flex gap-2 overflow-x-auto no-scrollbar pt-5 pb-1 px-5 w-full max-w-4xl mx-auto mt-1">
             <button onclick="aplicarFiltro('tudo')" id="btn-tudo" class="filter-btn px-4 py-2 rounded-full font-bold text-[0.75rem] whitespace-nowrap transition-colors shadow-sm bg-gray-900 text-white">Todas</button>
             <button onclick="aplicarFiltro('operacoes')" id="btn-operacoes" class="filter-btn px-4 py-2 rounded-full font-bold text-[0.75rem] whitespace-nowrap transition-colors border border-gray-200 bg-gray-50 text-gray-500">Operações</button>
@@ -181,9 +180,8 @@
         function processarDados(transactions, trades) {
             allHistoryData = [];
 
-            // 1. Processa Transações Comuns
             transactions.forEach(tx => {
-                if(tx.type === 'otc_trade') return; // Ignora o registro genérico, pois a tabela 'trades' é mais detalhada.
+                if(tx.type === 'otc_trade') return; 
                 
                 let isPos = false;
                 let title = tx.type;
@@ -200,6 +198,9 @@
                 }
                 else if (tx.type === 'referral_bonus') { 
                     isPos = true; title = 'Comissão de Equipa'; icon = 'people'; color = 'text-[#00c853]'; bg = 'bg-green-100'; filterCat = 'comissoes'; 
+                }
+                else if (tx.type === 'welcome_bonus') { 
+                    isPos = true; title = 'Bónus de Boas-vindas'; icon = 'redeem'; color = 'text-[#00c853]'; bg = 'bg-green-100'; filterCat = 'caixa'; 
                 }
                 else if (tx.type === 'bot_purchase') { 
                     isPos = false; title = 'Compra de Máquina IA'; icon = 'smart_toy'; color = 'text-[#FF5E00]'; bg = 'bg-orange-100'; filterCat = 'robos'; 
@@ -227,7 +228,6 @@
                 });
             });
 
-            // 2. Processa Trades no Mercado
             trades.forEach(tr => {
                 let isPos = tr.status === 'won';
                 
