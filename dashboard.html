@@ -141,21 +141,14 @@
             <div id="carouselContainer" class="marquee-withdrawals px-4 gap-8"></div>
         </div>
 
-        <!-- MERCADO -->
+        <!-- MÁQUINA ATIVA (Substituindo o antigo banner de Mercado) -->
         <div class="mt-2 mb-2">
             <div class="flex justify-between items-end mb-4">
-                <h3 class="text-lg font-bold text-gray-900">Mercado Cripto</h3>
+                <h3 class="text-lg font-bold text-gray-900">Sua Máquina IA</h3>
             </div>
             <div id="activeBotsContainer" class="flex flex-col gap-3">
-                <div class="bg-gradient-to-br from-[#FF5E00] to-[#F7931A] rounded-[2rem] pt-6 pl-2 sm:pl-8 pr-4 sm:pr-8 flex flex-row items-end justify-between border border-white/20 min-h-[190px] overflow-hidden relative shadow-md cursor-pointer active:scale-[0.98] transition-transform" onclick="window.location.href='mercado.html'">
-                    <img src="assets/images/banner-trade.png" alt="Trade Real" class="h-44 w-44 sm:h-56 sm:w-56 object-contain object-bottom shrink-0 -mb-2 z-10 transform scale-110 origin-bottom">
-                    <div class="flex flex-col items-start text-left pb-6 z-10 w-full mt-auto pl-2">
-                        <span class="font-black text-white text-[1.4rem] sm:text-[2rem] mb-1 leading-tight tracking-tight">Trade ao Vivo</span>
-                        <span class="text-xs sm:text-sm text-white/90 font-medium mb-4 leading-snug">Lucre em segundos no gráfico.</span>
-                        <button class="bg-white text-[#FF5E00] text-xs sm:text-sm font-black py-2.5 px-6 rounded-xl shadow-sm">
-                            Aceder ao Mercado
-                        </button>
-                    </div>
+                <div class="flex justify-center py-6 text-gray-400">
+                    <svg class="animate-spin h-8 w-8 text-bitcoin" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z"></path></svg>
                 </div>
             </div>
         </div>
@@ -290,8 +283,78 @@
                     document.getElementById('userBalance').textContent = formatMT(data.user.balance);
                     document.getElementById('totalEarned').textContent = formatMT(data.user.totalEarned);
                     document.getElementById('totalInvested').textContent = formatMT(data.user.invested);
+                    
+                    renderizarRoboDashboard(data.activeInvestments);
                 }
             } catch (err) { }
+        }
+
+        function renderizarRoboDashboard(investimentos) {
+            const container = document.getElementById('activeBotsContainer');
+            if (!investimentos || investimentos.length === 0) {
+                container.innerHTML = `
+                    <div class="bg-gradient-to-br from-[#FF5E00] to-[#F7931A] rounded-[2rem] p-6 flex flex-row items-center justify-between border border-white/20 shadow-md relative overflow-hidden min-h-[160px]">
+                        <div class="flex flex-col z-10 w-[60%] sm:w-2/3 pr-2">
+                            <span class="font-black text-white text-xl sm:text-2xl leading-tight mb-2 tracking-tight">Nenhuma máquina</span>
+                            <span class="text-[0.70rem] sm:text-sm text-white/90 font-medium leading-snug mb-4">Você não tem nenhum robô ativo. Adquira um para gerar lucros automáticos diários.</span>
+                            <button onclick="window.location.href='auto.html'" class="bg-white text-[#FF5E00] text-xs sm:text-sm font-black py-2.5 px-5 rounded-xl shadow-sm active:scale-95 transition-transform w-max">
+                                Ir para Auto
+                            </button>
+                        </div>
+                        <img src="assets/images/img-zero-bots.png" alt="Sem robô" class="absolute right-0 bottom-0 h-32 w-32 sm:h-40 sm:w-40 object-contain object-bottom transform translate-x-2 translate-y-2 z-0 drop-shadow-xl" onerror="this.style.display='none'">
+                    </div>
+                `;
+                return;
+            }
+
+            container.innerHTML = investimentos.map(inv => {
+                const bot = inv.bot;
+                if (!bot) return '';
+
+                const hoje = new Date();
+                const fim = new Date(inv.endDate);
+                let diasRestantes = Math.ceil((fim - hoje) / (1000 * 60 * 60 * 24));
+                if (diasRestantes < 0) diasRestantes = 0;
+
+                const percentagem = Math.min(100, Math.round(((bot.durationDays - diasRestantes) / bot.durationDays) * 100));
+
+                return `
+                <div class="bg-[#00c853] shadow-md rounded-2xl p-3 flex gap-3 transition-transform hover:shadow-lg relative overflow-hidden">
+                    <div class="absolute -right-10 -top-10 w-32 h-32 bg-white/10 rounded-full blur-2xl pointer-events-none"></div>
+                    <div class="w-[110px] sm:w-[130px] aspect-[4/5] bg-white/20 rounded-xl flex items-center justify-center shrink-0 border border-white/30 p-2 overflow-hidden relative z-10">
+                        <img src="${bot.image || 'assets/images/default-bot.png'}" class="w-full h-full object-contain drop-shadow-md" referrerpolicy="no-referrer">
+                    </div>
+                    <div class="flex flex-col justify-between w-full py-1 z-10">
+                        <div class="flex flex-col">
+                            <div class="flex justify-between items-start mb-2.5">
+                                <h3 class="font-black text-white text-[0.95rem] sm:text-base leading-tight pr-2">${bot.name}</h3>
+                                <span class="text-[0.55rem] text-[#00c853] bg-white px-1.5 py-0.5 rounded font-black uppercase tracking-widest flex items-center gap-1 shrink-0 shadow-sm">
+                                    <span class="animate-pulse w-1 h-1 sm:w-1.5 sm:h-1.5 rounded-full bg-[#00c853]"></span> Ativa
+                                </span>
+                            </div>
+                            <div class="flex flex-col gap-1.5 w-full">
+                                <div class="flex items-center gap-2">
+                                    <div class="w-1.5 h-1.5 rounded-full bg-white shrink-0 shadow-sm"></div>
+                                    <span class="text-[0.65rem] text-white/90 font-bold uppercase tracking-wide">Já Transferido: <span class="text-white font-black">+${formatMT(inv.accumulatedProfit || 0)}</span></span>
+                                </div>
+                                <div class="flex items-center gap-2">
+                                    <div class="w-1.5 h-1.5 rounded-full bg-white shrink-0 shadow-sm"></div>
+                                    <span class="text-[0.65rem] text-white/90 font-bold uppercase tracking-wide">Tempo Restante: <span class="text-white font-black">${diasRestantes} Dias</span></span>
+                                </div>
+                            </div>
+                            <div class="w-full bg-black/20 rounded-full h-1.5 mt-3 mb-1 relative z-10">
+                                <div class="bg-white h-1.5 rounded-full transition-all duration-1000 shadow-[0_0_8px_rgba(255,255,255,0.8)]" style="width: ${percentagem}%"></div>
+                            </div>
+                        </div>
+                        <div class="flex justify-end mt-2">
+                            <button onclick="window.location.href='auto.html'" class="bg-white hover:bg-gray-100 text-[#00c853] font-black py-2 px-4 rounded-xl flex items-center justify-center gap-1 shadow-md active:scale-95 transition-all text-xs sm:text-sm">
+                                Gerir <span class="material-icons text-[1.1rem]">settings</span>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+                `;
+            }).join('');
         }
 
         async function carregarNoticiasCripto() {
