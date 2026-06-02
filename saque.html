@@ -37,14 +37,9 @@
         </div>
     </div>
 
-    <!-- TELA DE BLOQUEIO (CASO NÃO TENHA CONTA CADASTRADA) -->
+    <!-- TELA DE BLOQUEIO DINÂMICA (Inativo / Conta Não Cadastrada) -->
     <div id="noAccountBlock" class="hidden flex-1 w-full max-w-lg mx-auto px-5 pt-12 flex-col items-center text-center">
-        <span class="material-icons text-gray-300 mb-4" style="font-size: 5rem;">account_balance_wallet</span>
-        <h2 class="text-xl font-black text-gray-900 mb-2">Conta Não Cadastrada</h2>
-        <p class="text-sm text-gray-500 font-medium mb-8">Para realizar levantamentos, você precisa de cadastrar a sua conta M-Pesa / e-Mola oficial no sistema primeiro.</p>
-        <button onclick="window.location.href='cadastrar-numero.html'" class="w-full bg-[#00c853] hover:bg-[#00e676] text-white font-black py-4 rounded-xl shadow-md active:scale-95 transition-transform flex items-center justify-center gap-2">
-            Cadastrar Conta Agora <span class="material-icons text-lg">arrow_forward</span>
-        </button>
+        <!-- Conteúdo Injetado via JS -->
     </div>
 
     <!-- FORMULÁRIO DE SAQUE -->
@@ -99,25 +94,50 @@
         
         let minWd = 100;
         let maxWd = 100000;
-        let userBalance = 0; // Armazena o saldo atual do usuário para validação no frontend
+        let userBalance = 0;
 
         const formatMT = (value) => Number(value).toLocaleString('pt-MZ', { minimumFractionDigits: 2 }) + ' MT';
 
         document.addEventListener("DOMContentLoaded", async () => {
             if (!token) { window.location.href = 'index.html'; return; }
             
-            // Requisita os dados REAIS da Base de Dados
             try {
                 const dashRes = await fetch(`${API_URL}/user/dashboard`, { headers: { 'Authorization': `Bearer ${token}` } });
                 const dashData = await dashRes.json();
                 
                 if (dashRes.ok && dashData.user) {
-                    userBalance = dashData.user.balance || 0; // Salva o saldo
+                    userBalance = dashData.user.balance || 0; 
 
-                    if (!dashData.user.withdrawalNumber || !dashData.user.withdrawalName) {
-                        document.getElementById('noAccountBlock').classList.remove('hidden');
-                        document.getElementById('noAccountBlock').classList.add('flex');
-                    } else {
+                    // REGRA DE SEGURANÇA VISUAL - BLOQUEIO DE BÓNUS SEM PLANO
+                    if (!dashData.activeInvestments || dashData.activeInvestments.length === 0) {
+                        const block = document.getElementById('noAccountBlock');
+                        block.classList.remove('hidden');
+                        block.classList.add('flex');
+                        block.innerHTML = `
+                            <span class="material-icons text-red-500 mb-4" style="font-size: 5rem;">smart_toy</span>
+                            <h2 class="text-xl font-black text-gray-900 mb-2">Plano Inativo</h2>
+                            <p class="text-sm text-gray-500 font-medium mb-8">Para realizar levantamentos na plataforma, é obrigatório ter uma máquina IA (plano) ativa e operando no sistema. Adquira o seu robô para desbloquear saques.</p>
+                            <button onclick="window.location.href='auto.html'" class="w-full bg-[#00c853] hover:bg-[#00e676] text-white font-black py-4 rounded-xl shadow-md active:scale-95 transition-transform flex items-center justify-center gap-2">
+                                Ir para Loja de Robôs <span class="material-icons text-lg">arrow_forward</span>
+                            </button>
+                        `;
+                    } 
+                    // SE NÃO TIVER CONTA DE SAQUE SALVA
+                    else if (!dashData.user.withdrawalNumber || !dashData.user.withdrawalName) {
+                        const block = document.getElementById('noAccountBlock');
+                        block.classList.remove('hidden');
+                        block.classList.add('flex');
+                        block.innerHTML = `
+                            <span class="material-icons text-gray-300 mb-4" style="font-size: 5rem;">account_balance_wallet</span>
+                            <h2 class="text-xl font-black text-gray-900 mb-2">Conta Não Cadastrada</h2>
+                            <p class="text-sm text-gray-500 font-medium mb-8">Para realizar levantamentos, você precisa de cadastrar a sua conta M-Pesa / e-Mola oficial no sistema primeiro.</p>
+                            <button onclick="window.location.href='cadastrar-numero.html'" class="w-full bg-gray-900 hover:bg-black text-white font-black py-4 rounded-xl shadow-md active:scale-95 transition-transform flex items-center justify-center gap-2">
+                                Cadastrar Conta Agora <span class="material-icons text-lg">arrow_forward</span>
+                            </button>
+                        `;
+                    } 
+                    // TUDO CERTO, EXIBE O FORMULÁRIO
+                    else {
                         document.getElementById('withdrawMain').classList.remove('hidden');
                         document.getElementById('withdrawMain').classList.add('flex');
                         
@@ -189,7 +209,6 @@
             const amount = Number(document.getElementById('wdAmount').value);
             const pin = document.getElementById('wdPin').value;
 
-            // VALIDAÇÃO RÁPIDA DE SALDO NO FRONTEND
             if (amount > userBalance) {
                 return exibirToast(`Saldo insuficiente. O seu saldo atual é de ${formatMT(userBalance)}.`, 'error');
             }

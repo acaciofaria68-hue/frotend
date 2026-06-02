@@ -67,7 +67,7 @@
             <button onclick="abrirModal('modalMetodoDeposito')" class="flex-1 bg-[#00c853] hover:bg-[#00e676] text-white py-3.5 rounded-2xl font-black text-sm active:scale-95 transition-transform flex items-center justify-center gap-2 shadow-[0_5px_15px_rgba(0,200,83,0.3)]">
                 <span class="material-icons text-[1.2rem]">south_west</span> Depositar
             </button>
-            <button onclick="abrirModal('modalMetodoSaque')" class="flex-1 bg-gray-900 hover:bg-black text-white py-3.5 rounded-2xl font-black text-sm active:scale-95 transition-transform flex items-center justify-center gap-2 shadow-md">
+            <button id="btnLevantarCarteira" onclick="abrirModal('modalMetodoSaque')" class="flex-1 bg-gray-900 hover:bg-black text-white py-3.5 rounded-2xl font-black text-sm active:scale-95 transition-transform flex items-center justify-center gap-2 shadow-md">
                 <span class="material-icons text-[1.2rem]">north_east</span> Levantar
             </button>
         </div>
@@ -235,6 +235,12 @@
                 if (resDash.ok) {
                     document.getElementById('walletBalance').textContent = formatMT(dataDash.user.balance);
                     document.getElementById('cardUserName').textContent = dataDash.user.name;
+
+                    // AQUI VERIFICA SE ELE TEM PLANO ATIVO PARA PODER LEVANTAR
+                    if (!dataDash.activeInvestments || dataDash.activeInvestments.length === 0) {
+                        const btnLevantar = document.getElementById('btnLevantarCarteira');
+                        btnLevantar.setAttribute('onclick', "exibirToast('Precisa ter uma máquina (plano) ativa para levantar o seu saldo. Adquira um Robô na loja!', 'error')");
+                    }
                 }
 
                 const resHist = await fetch(`${API_URL}/user/history`, { headers: { 'Authorization': `Bearer ${token}` } });
