@@ -48,9 +48,20 @@
             </div>
         </div>
 
-        <div class="bg-blue-50 border-l-4 border-blue-500 p-3 flex items-start gap-3 mb-6 rounded-r-lg shadow-sm">
+        <div class="bg-blue-50 border-l-4 border-blue-500 p-3 flex items-start gap-3 mb-4 rounded-r-lg shadow-sm">
             <span class="material-icons text-blue-500 text-sm mt-0.5">security</span>
             <p class="text-[0.70rem] text-blue-800 font-medium leading-relaxed">Por razões de segurança, os seus levantamentos serão sempre enviados exclusivamente para a conta registada abaixo. A sua alteração requer o PIN do sistema.</p>
+        </div>
+
+        <!-- AVISO DE SEGURANÇA (PIN) -->
+        <div class="bg-red-50 border-l-4 border-red-500 p-4 mb-6 rounded-r-lg shadow-sm flex items-start gap-3">
+            <span class="material-icons text-red-500 text-lg mt-0.5">security_update_warning</span>
+            <div class="flex flex-col">
+                <span class="text-[0.65rem] font-black text-red-700 uppercase tracking-widest mb-1">Atenção ao seu PIN</span>
+                <p class="text-[0.70rem] text-red-800 font-medium leading-relaxed">
+                    O PIN de segurança exigido abaixo tem o padrão de fábrica <strong class="text-red-900 text-sm">1234</strong>. Se ainda não o alterou através do seu perfil, recomendamos fortemente que o faça para evitar roubos na sua conta!
+                </p>
+            </div>
         </div>
 
         <form id="formContaSaque" class="flex flex-col gap-5">

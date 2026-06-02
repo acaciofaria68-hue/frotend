@@ -40,12 +40,23 @@
     <!-- FORMULÁRIO -->
     <main class="flex-1 w-full max-w-lg mx-auto px-4 pt-6 flex flex-col relative z-10">
         
-        <div class="flex items-center gap-4 mb-6 pb-4 border-b border-gray-100">
+        <div class="flex items-center gap-4 mb-5 pb-4 border-b border-gray-100">
             <!-- Imagem Local -->
             <img src="assets/images/icon-pin.png" alt="PIN" class="h-12 w-12 object-contain drop-shadow-sm">
             <div class="flex flex-col">
                 <span class="font-black text-gray-900 text-base">Código PIN de Saque</span>
                 <span class="text-[0.65rem] text-gray-500 font-bold uppercase tracking-widest mt-0.5">Segurança para transferências</span>
+            </div>
+        </div>
+
+        <!-- AVISO DE SEGURANÇA -->
+        <div class="bg-red-50 border-l-4 border-red-500 p-4 mb-6 rounded-r-lg shadow-sm flex items-start gap-3">
+            <span class="material-icons text-red-500 text-lg mt-0.5">security_update_warning</span>
+            <div class="flex flex-col">
+                <span class="text-[0.65rem] font-black text-red-700 uppercase tracking-widest mb-1">Aviso Crítico de Segurança</span>
+                <p class="text-[0.70rem] text-red-800 font-medium leading-relaxed">
+                    O PIN padrão do sistema é <strong class="text-red-900 text-sm">1234</strong>. Altere-o imediatamente! O PIN é a sua última defesa. Se alguém invadir a sua conta, não conseguirá roubar ou levantar o seu saldo sem conhecer o seu código secreto de 4 dígitos.
+                </p>
             </div>
         </div>
 
@@ -68,7 +79,7 @@
                 </div>
             </div>
 
-            <button type="submit" id="btnSubmit" class="w-full bg-gray-900 hover:bg-black text-white font-black py-4 rounded-xl mt-6 active:scale-95 transition-transform flex justify-center items-center gap-2 shadow-md">
+            <button type="submit" id="btnSubmit" class="w-full bg-gray-900 hover:bg-black text-white font-black py-4 rounded-xl mt-4 active:scale-95 transition-transform flex justify-center items-center gap-2 shadow-md">
                 Atualizar PIN de Segurança <span class="material-icons text-lg">verified_user</span>
             </button>
         </form>
