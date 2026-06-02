@@ -45,21 +45,24 @@
             </button>
             
             <div class="p-6 md:p-8 pb-6 overflow-y-auto no-scrollbar">
-                <h2 class="text-xl font-black text-gray-900 mb-4">Seja Bem-vindo(a)!</h2>
+                <h2 class="text-xl font-black text-gray-900 mb-4">Aviso Importante!</h2>
                 
                 <div class="text-[0.80rem] text-gray-600 font-medium space-y-3 leading-relaxed">
-                    <p>Maximize os seus ganhos com a nossa plataforma:</p>
+                    <p>A nossa plataforma continua a operar normalmente, garantindo os seus <strong>Lucros Automáticos</strong>, <strong>Mercado Real</strong> e <strong>Comissões de Equipa</strong>.</p>
                     
-                    <ul class="list-disc pl-5 space-y-2 text-gray-800">
-                        <li><strong>Lucros Automáticos:</strong> Máquinas IA que geram rendimentos diários sem esforço.</li>
-                        <li><strong>Programa de Convites:</strong> Ganhe comissões reais no seu saldo por cada amigo ativo (que tenha efetuado um depósito válido). Contas falsas são bloqueadas automaticamente.</li>
-                        <li><strong>Mercado Real:</strong> Multiplique o seu saldo com operações ao vivo.</li>
-                    </ul>
+                    <div class="bg-red-50 border border-red-100 p-4 rounded-xl mt-4">
+                        <strong class="text-red-600 block mb-1 text-sm flex items-center gap-1"><span class="material-icons text-base">warning</span> Grupo Suspenso</strong>
+                        <p class="text-red-800 text-[0.75rem] leading-relaxed">
+                            Por atividades de alguns membros que tentaram adicionar pessoas em massa, o nosso grupo oficial do WhatsApp foi suspenso. O mesmo encontra-se em análise para ver se pode ser recuperado dentro do prazo de <strong>24H</strong> que o WhatsApp deu.
+                        </p>
+                    </div>
+                    
+                    <p class="text-gray-800 font-bold mt-2">Enquanto isso, o nosso Suporte Oficial continua totalmente online e disponível para ajudá-lo(a)!</p>
                 </div>
             </div>
             
-            <a href="https://chat.whatsapp.com/JA1kgE1dNVy4WVNQ3oMAHl" target="_blank" onclick="fecharModalBemVindo()" class="w-full bg-[#25D366] hover:bg-[#20b858] text-white font-black py-4 flex items-center justify-center gap-2 transition-colors mt-auto">
-                <span class="iconify text-2xl" data-icon="ic:baseline-whatsapp"></span> Entrar no Grupo Oficial
+            <a href="https://wa.me/258855645197" target="_blank" onclick="fecharModalBemVindo()" class="w-full bg-[#00c853] hover:bg-[#00e676] text-white font-black py-4 flex items-center justify-center gap-2 transition-colors mt-auto">
+                <span class="iconify text-2xl" data-icon="ic:baseline-whatsapp"></span> Falar com o Suporte
             </a>
         </div>
     </div>
@@ -141,7 +144,7 @@
             <div id="carouselContainer" class="marquee-withdrawals px-4 gap-8"></div>
         </div>
 
-        <!-- MÁQUINA ATIVA (Substituindo o antigo banner de Mercado) -->
+        <!-- MÁQUINA ATIVA -->
         <div class="mt-2 mb-2">
             <div class="flex justify-between items-end mb-4">
                 <h3 class="text-lg font-bold text-gray-900">Sua Máquina IA</h3>
@@ -162,6 +165,17 @@
         </div>
 
     </main>
+
+    <!-- BOTAO FLUTUANTE SUPORTE WHATSAPP -->
+    <a href="https://wa.me/258855645197" target="_blank" class="fixed bottom-20 right-4 z-40 bg-[#00c853] hover:bg-[#00e676] border border-[#00c853] shadow-[0_8px_25px_rgba(0,200,83,0.4)] rounded-full p-1.5 pr-5 flex items-center gap-3 active:scale-95 transition-transform md:bottom-8 md:right-8 group">
+        <div class="bg-white w-11 h-11 rounded-full flex items-center justify-center shrink-0 shadow-inner">
+            <img src="assets/images/icon-support.png" alt="Atendimento" class="w-7 h-7 object-contain drop-shadow-sm group-hover:scale-110 transition-transform">
+        </div>
+        <div class="flex flex-col justify-center">
+            <span class="text-[0.60rem] font-bold text-white/90 uppercase tracking-widest leading-tight">Online</span>
+            <span class="text-sm font-black text-white leading-tight">Suporte</span>
+        </div>
+    </a>
 
     <!-- MENU INFERIOR MOBILE -->
     <nav class="md:hidden fixed bottom-0 left-0 w-full bg-white border-t border-gray-100 z-50 pb-safe shadow-[0_-4px_10px_rgba(0,0,0,0.03)]">
