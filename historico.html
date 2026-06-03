@@ -197,7 +197,10 @@
                     isPos = false; title = 'Levantamento'; icon = 'north_east'; color = 'text-gray-900'; bg = 'bg-gray-200'; filterCat = 'caixa'; 
                 }
                 else if (tx.type === 'referral_bonus') { 
-                    isPos = true; title = 'Comissão de Equipa'; icon = 'people'; color = 'text-[#00c853]'; bg = 'bg-green-100'; filterCat = 'comissoes'; 
+                    isPos = true; title = 'Comissão de Upgrades'; icon = 'people'; color = 'text-[#00c853]'; bg = 'bg-green-100'; filterCat = 'comissoes'; 
+                }
+                else if (tx.type === 'referral_bot_bonus') { // NOVO TIPO
+                    isPos = true; title = 'Máquina Grátis (Convite)'; icon = 'redeem'; color = 'text-[#00c853]'; bg = 'bg-green-100'; filterCat = 'comissoes'; 
                 }
                 else if (tx.type === 'welcome_bonus') { 
                     isPos = true; title = 'Bónus de Boas-vindas'; icon = 'redeem'; color = 'text-[#00c853]'; bg = 'bg-green-100'; filterCat = 'caixa'; 
