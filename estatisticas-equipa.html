@@ -93,7 +93,7 @@
                                 <th class="py-3 px-4 text-[0.65rem] font-bold text-gray-500 uppercase tracking-widest">Data</th>
                                 <th class="py-3 px-4 text-[0.65rem] font-bold text-gray-500 uppercase tracking-widest">Membro / Origem</th>
                                 <th class="py-3 px-4 text-[0.65rem] font-bold text-gray-500 uppercase tracking-widest">Atividade</th>
-                                <th class="py-3 px-4 text-[0.65rem] font-bold text-gray-500 uppercase tracking-widest text-right">Comissão</th>
+                                <th class="py-3 px-4 text-[0.65rem] font-bold text-gray-500 uppercase tracking-widest text-right">Valor Geração</th>
                             </tr>
                         </thead>
                         <tbody id="tabelaContainer" class="divide-y divide-gray-100 bg-white">
@@ -118,7 +118,7 @@
         <div class="w-full mb-8">
             <div class="flex justify-between items-center mb-4 px-1">
                 <h3 class="font-black text-gray-900 text-sm uppercase tracking-widest flex items-center gap-2">
-                    <span class="material-icons text-bitcoin text-lg">insights</span> Desempenho (Mercado Real vs Robôs)
+                    <span class="material-icons text-bitcoin text-lg">insights</span> Desempenho (Mercado Real vs Rede)
                 </h3>
             </div>
             
@@ -131,7 +131,7 @@
                     </div>
                     <div class="flex items-center gap-2">
                         <div class="w-3 h-3 rounded-full bg-[#00c853]"></div>
-                        <span class="text-xs font-bold text-gray-600">Compra de Robôs</span>
+                        <span class="text-xs font-bold text-gray-600">Comissões & Robôs</span>
                     </div>
                 </div>
 
@@ -209,7 +209,6 @@
 
         async function carregarDadosBackend() {
             try {
-                // Carrega Histórico Geral e Histórico de Mercado (Trades do Próprio Usuário)
                 const [resHist, resTrades] = await Promise.all([
                     fetch(`${API_URL}/user/history`, { headers: { 'Authorization': `Bearer ${token}` } }),
                     fetch(`${API_URL}/user/trades`, { headers: { 'Authorization': `Bearer ${token}` } })
@@ -232,7 +231,8 @@
                 if (resHist.ok) {
                     const dataHist = await resHist.json();
                     if (dataHist.transactions) {
-                        todasComissoes = dataHist.transactions.filter(t => t.type === 'referral_bonus' && t.status === 'completed');
+                        // ADICIONADO AQUI: A TABELA VAI PUXAR 'referral_bonus' E 'referral_bot_bonus'
+                        todasComissoes = dataHist.transactions.filter(t => (t.type === 'referral_bonus' || t.type === 'referral_bot_bonus') && t.status === 'completed');
                         processarEstatisticas();
                     } else {
                         mostrarVazio();
@@ -262,9 +262,9 @@
               .text("Sem dados suficientes para exibir o gráfico.");
         }
 
-        // Função que lê os dados REAIS da Base de Dados daquela transação
         function getMetadados(tx) {
-            const origin = tx.originType || 'Comissão de Equipa';
+            const isBot = tx.type === 'referral_bot_bonus';
+            const origin = tx.originType || (isBot ? 'Máquina Grátis' : 'Comissão de Upgrades');
             const isTrade = origin.includes('Mercado');
             const typeStr = origin;
             const typeColor = isTrade ? 'text-[#F7931A]' : 'text-[#00c853]';
@@ -481,7 +481,7 @@
             }
 
             drawPoints('market', '#F7931A', 'Mercado Real');
-            drawPoints('bot', '#00c853', 'Robô Auto');
+            drawPoints('bot', '#00c853', 'Comissões/Robô');
         }
     </script>
 </body>
