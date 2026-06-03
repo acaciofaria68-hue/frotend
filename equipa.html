@@ -44,26 +44,24 @@
     <main class="flex-1 w-full max-w-4xl mx-auto px-5 -mt-10 flex flex-col gap-6 relative z-10 md:ml-64 md:max-w-[calc(100%-16rem)]">
         
         <!-- CARD LINK DE CONVITE -->
-        <div class="bg-white rounded-[2rem] p-6 sm:p-8 border border-gray-100 shadow-xl relative overflow-hidden flex flex-col">
-            <div class="flex justify-between items-center mb-4">
-                <h3 class="font-black text-gray-900 text-xl sm:text-2xl leading-tight">Convide e Multiplique</h3>
-                <span class="material-icons text-bitcoin text-3xl">redeem</span>
-            </div>
-            
-            <p class="text-[0.75rem] sm:text-[0.85rem] text-gray-600 font-medium leading-relaxed mb-6">
-                <strong>Nova Regra Fantástica:</strong> Quando o seu indicado efetuar um depósito e comprar a sua <strong>Primeira Máquina IA</strong>, você recebe <strong>exatamente a mesma máquina de GRAÇA!</strong> Vai lucrar diariamente o mesmo que ele.<br><br>
-                Nas compras seguintes (Upgrades) feitas por ele, em vez da máquina, você recebe uma <strong>Comissão em Dinheiro</strong> adicionada automaticamente ao seu Saldo Real!
-            </p>
-            
-            <div class="w-full">
-                <span class="text-[0.60rem] font-bold text-gray-400 uppercase tracking-widest block mb-1.5 ml-1">Seu Link de Convite Oficial</span>
-                <div class="flex items-center justify-between bg-gray-50 border border-gray-200 rounded-2xl p-1 shadow-inner relative">
-                    <span id="referralCodeText" class="font-bold text-xs sm:text-sm text-gray-900 tracking-wide pl-4 flex-1 select-all truncate">Gerando link...</span>
-                    <button onclick="copiarCodigo()" class="bg-gray-900 hover:bg-black text-white h-11 w-11 rounded-xl flex items-center justify-center shrink-0 active:scale-95 transition-transform shadow-md border border-gray-800 ml-2">
-                        <span class="material-icons text-base">content_copy</span>
-                    </button>
+        <div class="bg-white rounded-[2rem] p-6 sm:p-8 border border-gray-100 shadow-xl relative overflow-hidden flex min-h-[190px]">
+            <div class="flex flex-col z-10 w-[60%] sm:w-2/3 pr-2 justify-center">
+                <h3 class="font-black text-gray-900 text-xl sm:text-2xl mb-1.5 leading-tight">Convide e Ganhe</h3>
+                <p class="text-[0.70rem] sm:text-[0.80rem] text-gray-500 font-medium leading-snug mb-5">
+                    Compartilhe e ganhe comissões e robôs. <strong class="text-red-500">Nota de Segurança:</strong> Para evitar fraudes, os bónus só são pagos após o seu indicado realizar um depósito real e validado no sistema. Contas falsas não geram ganhos.
+                </p>
+                
+                <div class="w-full">
+                    <span class="text-[0.60rem] font-bold text-gray-400 uppercase tracking-widest block mb-1.5 ml-1">Seu Link de Convite Oficial</span>
+                    <div class="flex items-center justify-between bg-gray-50 border border-gray-200 rounded-2xl p-1 shadow-inner relative">
+                        <span id="referralCodeText" class="font-bold text-xs sm:text-sm text-gray-900 tracking-wide pl-4 flex-1 select-all truncate">Gerando link...</span>
+                        <button onclick="copiarCodigo()" class="bg-gray-900 hover:bg-black text-white h-11 w-11 rounded-xl flex items-center justify-center shrink-0 active:scale-95 transition-transform shadow-md border border-gray-800 ml-2">
+                            <span class="material-icons text-base">content_copy</span>
+                        </button>
+                    </div>
                 </div>
             </div>
+            <img src="assets/images/invite-banner.png" alt="Equipa e Bônus" class="absolute -right-2 bottom-[-10px] sm:top-1/2 sm:-translate-y-1/2 sm:-right-4 h-40 w-40 sm:h-52 sm:w-52 object-contain drop-shadow-2xl z-0 pointer-events-none transform scale-110">
         </div>
 
         <!-- ESTATÍSTICAS DE REDE E COMISSÕES -->
