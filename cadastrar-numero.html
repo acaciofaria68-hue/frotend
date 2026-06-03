@@ -97,7 +97,6 @@
             if (!token) window.location.href = 'index.html';
 
             try {
-                // Fetch REAL dos dados do utilizador do Backend
                 const res = await fetch(`${API_URL}/user/dashboard`, { headers: { 'Authorization': `Bearer ${token}` } });
                 const data = await res.json();
                 
@@ -154,7 +153,6 @@
                 const data = await res.json();
                 
                 if (res.ok) {
-                    // Guarda o PIN na memória local APENAS para funcionar com a Biometria Rápida no futuro
                     localStorage.setItem('userWithdrawalPin', pin); 
                     
                     exibirToast(data.message || 'Conta cadastrada e validada!', 'success');

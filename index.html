@@ -161,7 +161,6 @@
 
                         if(loginReq.ok) {
                             localStorage.setItem('token', loginRes.token);
-                            // REMOVIDO: trigger de tour
                             setTimeout(() => window.location.href = 'dashboard.html', 1500); 
                         } else {
                             setTimeout(() => window.location.href = 'login.html', 1500);

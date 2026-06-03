@@ -49,7 +49,6 @@
     </div>
 
     <div class="w-full md:ml-64 md:max-w-[calc(100%-16rem)] z-0 block">
-        <!-- Banner topo -->
         <img src="assets/images/banner-auto.png" alt="Banner Robôs Auto" class="w-full h-auto object-cover rounded-b-[1.5rem] shadow-sm">
     </div>
 
@@ -73,7 +72,6 @@
                 <h3 class="text-lg font-black text-gray-900">Loja de Robôs</h3>
             </div>
             <div id="storeBotsContainer" class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <!-- Os robôs serão renderizados via JS aqui -->
             </div>
         </div>
 
@@ -85,11 +83,6 @@
             <a href="dashboard.html" class="flex flex-col items-center justify-center text-gray-400 hover:text-gray-900 w-14 transition-colors">
                 <img src="assets/images/icon-home.png" alt="Início" class="h-6 w-6 object-contain mb-1">
                 <span class="text-[0.65rem] font-medium">Início</span>
-            </a>
-            
-            <a href="mercado.html" class="flex flex-col items-center justify-center text-gray-400 hover:text-gray-900 w-14 transition-colors">
-                <span class="iconify text-[1.40rem] mb-1" data-icon="cryptocurrency-color:btc"></span>
-                <span class="text-[0.65rem] font-medium">Mercado</span>
             </a>
             
             <a href="auto.html" class="flex flex-col items-center justify-center text-bitcoin w-14 transition-transform active:scale-95">
@@ -118,9 +111,6 @@
         
         <a href="dashboard.html" class="flex items-center gap-3 px-6 py-4 text-gray-500 hover:bg-gray-50 hover:text-gray-900 font-medium transition-colors">
             <img src="assets/images/icon-home.png" class="h-5 w-5 object-contain"> Início
-        </a>
-        <a href="mercado.html" class="flex items-center gap-3 px-6 py-4 text-gray-500 hover:bg-gray-50 hover:text-gray-900 font-medium transition-colors">
-            <span class="iconify text-xl" data-icon="cryptocurrency-color:btc"></span> Mercado Real
         </a>
         <a href="auto.html" class="flex items-center gap-3 px-6 py-4 text-bitcoin bg-orange-50 font-bold border-r-4 border-bitcoin">
             <img src="assets/images/icon-auto.png" class="h-5 w-5 object-contain"> Robôs Auto
@@ -311,13 +301,11 @@
                 
                 if (currentBotPrice > 0) {
                     if (bot.price <= currentBotPrice) {
-                        // BLOQUEADO - A MÁQUINA JÁ É IGUAL OU INFERIOR A ATUAL
                         btnHtml = `
                         <button disabled class="bg-gray-100 text-gray-400 font-bold py-2 px-4 rounded-xl flex items-center justify-center gap-1 border border-gray-200 cursor-not-allowed text-xs sm:text-sm">
                             Indisponível
                         </button>`;
                     } else {
-                        // UPGRADE - A MÁQUINA É MAIS CARA, DEVE PAGAR A DIFERENÇA
                         const diferenca = bot.price - currentBotPrice;
                         btnHtml = `
                         <button onclick="prepararCompraBot('${bot._id}', ${diferenca}, true)" class="bg-[#00c853] hover:bg-[#00e676] text-white font-bold py-2 px-4 rounded-xl active:scale-95 transition-transform flex items-center justify-center gap-1 shadow-sm text-xs sm:text-sm">
@@ -325,7 +313,6 @@
                         </button>`;
                     }
                 } else {
-                    // PRIMEIRA COMPRA
                     btnHtml = `
                     <button onclick="prepararCompraBot('${bot._id}', ${bot.price}, false)" class="bg-gray-900 hover:bg-black text-white font-bold py-2 px-4 rounded-xl active:scale-95 transition-transform flex items-center justify-center gap-1 shadow-md text-xs sm:text-sm">
                         Adquirir <span class="material-icons text-[1.1rem]">arrow_forward</span>
@@ -334,15 +321,12 @@
 
                 return `
                 <div class="bg-white border border-gray-200 shadow-sm rounded-2xl p-3 flex gap-3 transition-transform hover:shadow-md">
-                    
                     <div class="w-[110px] sm:w-[130px] aspect-[4/5] bg-gray-50 rounded-xl flex items-center justify-center shrink-0 border border-gray-100 p-2 overflow-hidden relative">
                         <img src="${bot.image || 'assets/images/default-bot.png'}" class="w-full h-full object-contain drop-shadow-md" referrerpolicy="no-referrer">
                     </div>
-                    
                     <div class="flex flex-col justify-between w-full py-1">
                         <div class="flex flex-col">
                             <h3 class="font-black text-gray-900 text-[0.95rem] sm:text-base leading-tight mb-2.5">${bot.name}</h3>
-                            
                             <div class="flex flex-col gap-1.5 w-full">
                                 <div class="flex items-center gap-2">
                                     <div class="w-1.5 h-1.5 rounded-full bg-bitcoin shrink-0 shadow-sm"></div>
@@ -362,18 +346,15 @@
                                 </div>
                             </div>
                         </div>
-                        
                         <div class="flex justify-end mt-2">
                             ${btnHtml}
                         </div>
                     </div>
-
                 </div>
                 `;
             }).join('');
         }
 
-        // FUNÇÕES DO MODAL DE COMPRA
         function prepararCompraBot(botId, valorParaPagar, isUpgrade) {
             pendingBotId = botId;
             pendingValorToPay = valorParaPagar;
@@ -401,18 +382,14 @@
             modal.classList.add('opacity-0', 'pointer-events-none');
             content.classList.remove('scale-100');
             content.classList.add('scale-95');
-
-            // ATENÇÃO: NÃO APAGAMOS pendingBotId AQUI PARA PERMITIR A COMPRA DEPOIS
         }
 
         async function executarCompraBot() {
             if (!pendingBotId) return;
 
-            // SALVA OS DADOS ANTES DE FECHAR O MODAL E LIMPAR AS VARIÁVEIS
             const botIdToSend = pendingBotId; 
             const isUpgrade = pendingIsUpgrade;
 
-            // Fecha o modal e limpa a variável *depois* de salvar o ID localmente
             fecharModalBotConfirm();
             pendingBotId = null;
             pendingValorToPay = 0;

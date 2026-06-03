@@ -48,7 +48,6 @@
 
         <div class="flex gap-2 overflow-x-auto no-scrollbar pt-5 pb-1 px-5 w-full max-w-4xl mx-auto mt-1">
             <button onclick="aplicarFiltro('tudo')" id="btn-tudo" class="filter-btn px-4 py-2 rounded-full font-bold text-[0.75rem] whitespace-nowrap transition-colors shadow-sm bg-gray-900 text-white">Todas</button>
-            <button onclick="aplicarFiltro('operacoes')" id="btn-operacoes" class="filter-btn px-4 py-2 rounded-full font-bold text-[0.75rem] whitespace-nowrap transition-colors border border-gray-200 bg-gray-50 text-gray-500">Operações</button>
             <button onclick="aplicarFiltro('comissoes')" id="btn-comissoes" class="filter-btn px-4 py-2 rounded-full font-bold text-[0.75rem] whitespace-nowrap transition-colors border border-gray-200 bg-gray-50 text-gray-500">Comissões</button>
             <button onclick="aplicarFiltro('robos')" id="btn-robos" class="filter-btn px-4 py-2 rounded-full font-bold text-[0.75rem] whitespace-nowrap transition-colors border border-gray-200 bg-gray-50 text-gray-500">Robôs Auto</button>
             <button onclick="aplicarFiltro('caixa')" id="btn-caixa" class="filter-btn px-4 py-2 rounded-full font-bold text-[0.75rem] whitespace-nowrap transition-colors border border-gray-200 bg-gray-50 text-gray-500">Caixa</button>
@@ -69,14 +68,10 @@
 
     <!-- MENU INFERIOR MOBILE -->
     <nav class="md:hidden fixed bottom-0 left-0 w-full bg-white border-t border-gray-100 z-50 pb-safe shadow-[0_-4px_10px_rgba(0,0,0,0.03)]">
-        <div class="flex justify-between items-center h-16 px-4 sm:px-6">
+        <div class="flex justify-between items-center h-16 px-6 sm:px-8">
             <a href="dashboard.html" class="flex flex-col items-center justify-center text-gray-400 hover:text-gray-900 w-14 transition-colors">
                 <img src="assets/images/icon-home.png" alt="Início" class="h-6 w-6 object-contain mb-1">
                 <span class="text-[0.65rem] font-medium">Início</span>
-            </a>
-            <a href="mercado.html" class="flex flex-col items-center justify-center text-gray-400 hover:text-gray-900 w-14 transition-colors">
-                <span class="iconify text-[1.40rem] mb-1" data-icon="cryptocurrency-color:btc"></span>
-                <span class="text-[0.65rem] font-medium">Mercado</span>
             </a>
             <a href="auto.html" class="flex flex-col items-center justify-center text-gray-400 hover:text-gray-900 w-14 transition-colors">
                 <img src="assets/images/icon-auto.png" alt="Auto" class="h-6 w-6 object-contain mb-1">
@@ -102,9 +97,6 @@
         
         <a href="dashboard.html" class="flex items-center gap-3 px-6 py-4 text-gray-500 hover:bg-gray-50 hover:text-gray-900 font-medium transition-colors">
             <img src="assets/images/icon-home.png" class="h-5 w-5 object-contain"> Início
-        </a>
-        <a href="mercado.html" class="flex items-center gap-3 px-6 py-4 text-gray-500 hover:bg-gray-50 hover:text-gray-900 font-medium transition-colors">
-            <span class="iconify text-xl" data-icon="cryptocurrency-color:btc"></span> Mercado Real
         </a>
         <a href="auto.html" class="flex items-center gap-3 px-6 py-4 text-gray-500 hover:bg-gray-50 hover:text-gray-900 font-medium transition-colors">
             <img src="assets/images/icon-auto.png" class="h-5 w-5 object-contain"> Robôs Auto
@@ -152,21 +144,16 @@
 
         async function carregarTodoHistorico() {
             try {
-                const [resHist, resTrades] = await Promise.all([
-                    fetch(`${API_URL}/user/history`, { headers: { 'Authorization': `Bearer ${token}` } }),
-                    fetch(`${API_URL}/user/trades`, { headers: { 'Authorization': `Bearer ${token}` } })
-                ]);
-
-                if(resHist.status === 401 || resTrades.status === 401) {
+                const resHist = await fetch(`${API_URL}/user/history`, { headers: { 'Authorization': `Bearer ${token}` } });
+                
+                if(resHist.status === 401) {
                     localStorage.removeItem('token');
                     window.location.href = 'index.html';
                     return;
                 }
 
                 const dataHist = await resHist.json();
-                const dataTrades = await resTrades.json();
-                
-                processarDados(dataHist.transactions || [], dataTrades || []);
+                processarDados(dataHist.transactions || []);
 
             } catch (err) {
                 document.getElementById('historicoContainer').innerHTML = `
@@ -177,12 +164,10 @@
             }
         }
 
-        function processarDados(transactions, trades) {
+        function processarDados(transactions) {
             allHistoryData = [];
 
             transactions.forEach(tx => {
-                if(tx.type === 'otc_trade') return; 
-                
                 let isPos = false;
                 let title = tx.type;
                 let icon = 'sync';
@@ -199,7 +184,7 @@
                 else if (tx.type === 'referral_bonus') { 
                     isPos = true; title = 'Comissão de Upgrades'; icon = 'people'; color = 'text-[#00c853]'; bg = 'bg-green-100'; filterCat = 'comissoes'; 
                 }
-                else if (tx.type === 'referral_bot_bonus') { // NOVO TIPO
+                else if (tx.type === 'referral_bot_bonus') { 
                     isPos = true; title = 'Máquina Grátis (Convite)'; icon = 'redeem'; color = 'text-[#00c853]'; bg = 'bg-green-100'; filterCat = 'comissoes'; 
                 }
                 else if (tx.type === 'welcome_bonus') { 
@@ -228,24 +213,6 @@
                     color: color,
                     bg: bg,
                     category: filterCat
-                });
-            });
-
-            trades.forEach(tr => {
-                let isPos = tr.status === 'won';
-                
-                allHistoryData.push({
-                    id: tr._id,
-                    date: new Date(tr.createdAt),
-                    title: `Operação (${tr.pair})`,
-                    desc: isPos ? 'Vitória' : 'Perda',
-                    amount: isPos ? tr.profit : tr.amount,
-                    isPositive: isPos,
-                    status: 'completed',
-                    icon: isPos ? 'trending_up' : 'trending_down',
-                    color: isPos ? 'text-[#00c853]' : 'text-[#ff1744]',
-                    bg: isPos ? 'bg-green-100' : 'bg-red-100',
-                    category: 'operacoes'
                 });
             });
 
@@ -287,7 +254,6 @@
                 
                 let valSign = item.isPositive ? '+' : '-';
                 let valColorClass = item.isPositive ? 'text-[#00c853]' : 'text-gray-900';
-                if (item.category === 'operacoes' && !item.isPositive) valColorClass = 'text-[#ff1744]'; 
 
                 let extraTag = '';
                 if(item.status === 'pending') {

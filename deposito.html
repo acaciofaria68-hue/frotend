@@ -113,7 +113,6 @@
         document.getElementById('depImage').addEventListener('change', function(e) {
             const file = e.target.files[0];
             if(file) {
-                // Validação simples de tamanho (ex: max 5MB)
                 if(file.size > 5 * 1024 * 1024) {
                     exibirToast('A imagem deve ter no máximo 5MB', 'error');
                     return;
